@@ -1,34 +1,22 @@
 {
-    "name": "atwx/standard-silverstripe-template",
+    "name": "stevenpaw/darepile",
     "type": "silverstripe-recipe",
-    "description": "A default Silverstripe installation",
+    "description": "A Silverstripe 6 project",
     "repositories": [
-        {
-            "type": "git",
-            "url": "https://github.com/wernerkrauss/silverstripe-pure-modal.git"
-        },
-        {
-            "type": "git",
-            "url": "https://github.com/atwx/silverstripe-projectinfo.git"
-        },
-        {
-            "type": "git",
-            "url": "https://github.com/wernerkrauss/silverstripe-ideannotator.git"
-        }
     ],
     "require": {
-        "php": "^8.4",
-        "silverstripe/recipe-cms": "^6.1",
-        "dnadesign/silverstripe-elemental": "^6.1",
+        "php": "^8.3",
+        "silverstripe/recipe-core": "^6.1",
+        "silverstripe/admin": "^3.1",
+        "silverstripe/asset-admin": "^3.1",
         "atwx/silverstripe-vitehelper": "^1.4",
         "ext-json": "*",
-        "atwx/silverstripe-projectinfo": "dev-main",
         "symbiote/silverstripe-gridfieldextensions": "^5.1",
-        "silverstripe/linkfield": "^5.1",
-        "atwx/silverstripe-gate-client": "^2.1"
+        "stevenpaw/silverstripe-cms-backend-theme": "^1.1",
+        "stevenpaw/stevens-silverstripe-icons": "dev-main"
     },
     "require-dev": {
-        "silverleague/ideannotator": "dev-silverstripe6 as 4.0",
+        "silverleague/ideannotator": "^4.0",
         "wernerkrauss/silverstripe-rector": "^1",
         "cambis/silverstan": "^2",
         "squizlabs/php_codesniffer": "^3",
@@ -51,9 +39,7 @@
             "app/.htaccess",
             "app/_config.php",
             "app/_config/mimevalidator.yml",
-            "app/_config/mysite.yml",
-            "app/src/Page.php",
-            "app/src/PageController.php"
+            "app/_config/mysite.yml"
         ],
         "public-files-installed": [
             ".htaccess",

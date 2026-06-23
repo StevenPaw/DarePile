@@ -1,0 +1,122 @@
+.card-count-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.card-count-bar__actions {
+    display: flex;
+    gap: 0.25rem;
+    flex-shrink: 0;
+}
+
+.count-badge {
+    font-size: 0.875rem;
+    font-weight: 600;
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
+}
+
+.count-badge--ok {
+    background: color-mix(in srgb, var(--color-success) 20%, transparent);
+    color: var(--color-success);
+}
+
+.count-badge--warn {
+    background: color-mix(in srgb, var(--color-warn) 20%, transparent);
+    color: var(--color-warn);
+}
+
+.search-row {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--color-bg);
+    padding: 0.25rem 0;
+}
+
+.cards-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    max-height: 40vh;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 0.5rem;
+}
+
+.card-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.6rem 0.5rem;
+    border-radius: calc(var(--radius) - 4px);
+    cursor: pointer;
+    transition: background 0.1s;
+
+    input[type="checkbox"] {
+        flex-shrink: 0;
+        margin-top: 0.15rem;
+        accent-color: var(--color-accent);
+        width: 1rem;
+        height: 1rem;
+    }
+
+    &:hover,
+    &.card-row--selected {
+        background: var(--color-surface-2);
+    }
+}
+
+.card-row__dare {
+    flex: 1;
+    font-size: 0.875rem;
+    color: var(--color-text);
+    line-height: 1.4;
+}
+
+.badge--adult {
+    font-size: 0.65rem;
+    padding: 0.15em 0.45em;
+    border-radius: 4px;
+    font-weight: 700;
+    flex-shrink: 0;
+    background: color-mix(in srgb, var(--color-accent) 20%, transparent);
+    color: var(--color-accent);
+}
+
+.list-loading,
+.list-empty {
+    text-align: center;
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.custom-card-add {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.custom-card-form {
+    display: flex;
+    gap: 0.5rem;
+
+    .input {
+        flex: 1;
+    }
+}
+
+.custom-cards-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}

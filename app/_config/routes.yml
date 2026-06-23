@@ -6,4 +6,6 @@ After:
 ---
 SilverStripe\Control\Director:
   rules:
-    "typographyexample//$Action/$ID/$Name": 'App\Pages\TypographyExampleController'
+    'api/v1/game//': 'App\Controllers\GameApiController'
+    'api/v1/cards': 'App\Controllers\CardApiController'
+    '': 'App\Controllers\SpaController'

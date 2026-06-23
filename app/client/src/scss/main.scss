@@ -1,85 +1,204 @@
-@use "glightbox/dist/css/glightbox.css";
-@use 'swiper/swiper-bundle.css';
+/* ── Partials ─────────────────────────────────────────────────── */
+@use "app";
+@use "views/setup-shared";
+@use "views/home";
+@use "views/setup-players";
+@use "views/setup-cards";
+@use "views/game";
+@use "views/stats";
+@use "views/add-card";
+@use "components/card-pile";
+@use "components/drawn-card-modal";
+@use "components/qr-code-modal";
 
-@use "fonts.scss";
-@use "normalize.scss";
-@use "variables" as *;
-@use "typography.scss";
-@use "forms.scss";
+/* ── Design tokens ───────────────────────────────────────────── */
+:root {
+    --color-bg:         #0f0f1a;
+    --color-surface:    #1a1a2e;
+    --color-surface-2:  #22223b;
+    --color-border:     #2e2e4a;
+    --color-text:       #f0f0f5;
+    --color-text-muted: #8888aa;
+    --color-accent:     #e94560;
+    --color-success:    #2ecc71;
+    --color-warn:       #f39c12;
 
-@use "layout/footer.scss";
-@use "layout/header.scss";
-
-@use "elements/TextImageElement.scss";
-@use "elements/TeaserElement.scss";
-
-.section {
-    max-width: var(--MaxWidth);
-    margin: 50px auto;
-    padding: 0 20px;
+    --radius:           14px;
+    --radius-sm:        8px;
 }
 
-.section_content{
-    max-width: var(--MaxWidthContent);
-    margin: 0 auto;
+/* ── Reset & base ────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
 }
 
-//Styles to make the footer stick to the bottom of the page
+html {
+    font-size: 16px;
+    height: 100%;
+}
+
 body {
+    min-height: 100%;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior: none;
+}
+
+#app {
+    min-height: 100svh;
     min-height: 100vh;
-    display: grid;
-    grid-template-columns: 100%;
-    grid-template-rows: auto 1fr auto;
-    grid-template-areas:
-        "header"
-        "content"
-        "footer";
+}
+
+/* ── Buttons ─────────────────────────────────────────────────── */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.65rem 1.25rem;
+    border-radius: var(--radius-sm);
+    border: 2px solid transparent;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    line-height: 1;
+    text-decoration: none;
+
+    &:active {
+        transform: scale(0.97);
+    }
+
+    &:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        transform: none;
+    }
+}
+
+.btn--primary {
+    background: var(--color-accent);
+    color: #fff;
+    border-color: var(--color-accent);
+
+    &:not(:disabled):hover {
+        opacity: 0.9;
+    }
+}
+
+.btn--secondary {
+    background: var(--color-surface-2);
+    color: var(--color-text);
+    border-color: var(--color-border);
+}
+
+.btn--ghost {
+    background: transparent;
+    color: var(--color-text-muted);
+    border-color: transparent;
+
+    &:not(:disabled):hover {
+        color: var(--color-text);
+    }
+}
+
+.btn--success {
+    background: var(--color-success);
+    color: #fff;
+    border-color: var(--color-success);
+}
+
+.btn--danger {
+    background: var(--color-accent);
+    color: #fff;
+    border-color: var(--color-accent);
+}
+
+.btn--icon {
+    padding: 0.65rem 0.85rem;
+    font-size: 1.25rem;
+    background: var(--color-surface-2);
+    border-color: var(--color-border);
+    color: var(--color-text);
+}
+
+.btn--lg {
+    padding: 0.875rem 1.5rem;
+    font-size: 1.05rem;
+    border-radius: var(--radius);
     width: 100%;
-    background-color: #f7f7f7;
-    overflow-x: hidden;
+}
 
-    .area_header {
-        grid-area: header;
-        z-index: 100;
+.btn--sm {
+    padding: 0.45rem 0.875rem;
+    font-size: 0.8rem;
+}
+
+/* ── Form inputs ─────────────────────────────────────────────── */
+.input {
+    width: 100%;
+    background: var(--color-surface-2);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text);
+    padding: 0.65rem 0.875rem;
+    font-size: 0.95rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s;
+
+    &::placeholder {
+        color: var(--color-text-muted);
     }
 
-    .area_content {
-        grid-area: content;
-        width: 100%;
-        margin: 0 auto;
+    &:focus {
+        border-color: var(--color-accent);
     }
+}
 
-    .area_footer {
-        grid-area: footer;
+.field-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin-bottom: 0.35rem;
+}
+
+/* ── Spinner ─────────────────────────────────────────────────── */
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
     }
+}
 
-    img {
-        &.leftAlone {
-            float: left;
-            margin: 5px 100% 10px 0;
-        }
+.spinner {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
+}
 
-        &.rightAlone {
-            float: right;
-            margin-left: 100%;
-        }
+.spinner--lg {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-width: 3px;
+}
 
-        &.center {
-            float: none;
-            margin-left: auto;
-            margin-right: auto;
-            display: block;
-        }
-
-        &.right {
-            float: right;
-            margin-left: 20px;
-        }
-
-        &.left {
-            float: left;
-            padding: 0px 20px 10px 0;
-            margin: 0px 0 0 0;
-        }
-    }
+/* ── Error ───────────────────────────────────────────────────── */
+.error-msg {
+    color: var(--color-accent);
+    font-size: 0.875rem;
+    text-align: center;
 }

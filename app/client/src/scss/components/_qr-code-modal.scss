@@ -1,0 +1,49 @@
+.qr-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    padding: 1.5rem;
+}
+
+.qr-box {
+    background: var(--color-surface);
+    border-radius: var(--radius);
+    padding: 1.75rem;
+    width: 100%;
+    max-width: 340px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    text-align: center;
+}
+
+.qr-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin: 0;
+}
+
+.qr-desc {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    margin: 0;
+}
+
+.qr-canvas-wrap {
+    border-radius: 10px;
+    overflow: hidden;
+    border: 3px solid var(--color-border);
+}
+
+.qr-url {
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+    word-break: break-all;
+    margin: 0;
+}
