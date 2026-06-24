@@ -1,6 +1,26 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import * as gameApi from '../api/game.js'
+
+function rangeKey(gameHash) {
+    return `darepile_range_${gameHash}`
+}
+
+function saveRange(gameHash, min, max) {
+    localStorage.setItem(rangeKey(gameHash), JSON.stringify({ min, max }))
+}
+
+function loadRange(gameHash) {
+    try {
+        const raw = localStorage.getItem(rangeKey(gameHash))
+        if (!raw) return null
+        const { min, max } = JSON.parse(raw)
+        if (Number.isInteger(min) && Number.isInteger(max) && min >= 1 && max <= 10 && min <= max) {
+            return { min, max }
+        }
+    } catch { /* ignore corrupt data */ }
+    return null
+}
 
 export const useGameStore = defineStore('game', () => {
     const game = ref(null)
@@ -11,8 +31,16 @@ export const useGameStore = defineStore('game', () => {
     const players = computed(() => game.value?.players ?? [])
     const cards = computed(() => game.value?.cards ?? [])
     const usedCardIds = computed(() => game.value?.usedCardIds ?? [])
+
+    const levelMin = ref(1)
+    const levelMax = ref(10)
+
     const availableCards = computed(() =>
-        cards.value.filter((c) => !usedCardIds.value.includes(c.id))
+        cards.value.filter((c) =>
+            !usedCardIds.value.includes(c.id) &&
+            c.level >= levelMin.value &&
+            c.level <= levelMax.value
+        )
     )
 
     async function withLoading(fn) {
@@ -48,6 +76,11 @@ export const useGameStore = defineStore('game', () => {
     async function loadGame(gameHash) {
         return withLoading(async () => {
             game.value = await gameApi.getGame(gameHash)
+            const saved = loadRange(gameHash)
+            if (saved) {
+                levelMin.value = saved.min
+                levelMax.value = saved.max
+            }
         })
     }
 
@@ -95,6 +128,10 @@ export const useGameStore = defineStore('game', () => {
         })
     }
 
+    watch([levelMin, levelMax], ([min, max]) => {
+        if (hash.value) saveRange(hash.value, min, max)
+    })
+
     function clearGame() {
         game.value = null
         localStorage.removeItem('darepile_hash')
@@ -109,6 +146,8 @@ export const useGameStore = defineStore('game', () => {
         cards,
         usedCardIds,
         availableCards,
+        levelMin,
+        levelMax,
         createGame,
         loadGame,
         setup,

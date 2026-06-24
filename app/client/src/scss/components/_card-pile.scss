@@ -64,8 +64,13 @@
 }
 
 .pile__empty-icon {
-    font-size: 5rem;
     opacity: 0.3;
+    color: var(--color-text);
+
+    svg {
+        width: 5rem;
+        height: 5rem;
+    }
 }
 
 .card-pop-enter-active,

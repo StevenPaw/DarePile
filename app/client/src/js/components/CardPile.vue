@@ -13,13 +13,15 @@
         <p class="pile__label">Tippen zum Aufdecken</p>
       </div>
       <div v-else key="empty" class="pile pile--empty">
-        <span class="pile__empty-icon">🎴</span>
+        <span class="pile__empty-icon icon" v-html="PlayingCardsIcon" />
       </div>
     </transition>
   </div>
 </template>
 
 <script setup>
+import PlayingCardsIcon from '../../../icons/playing_cards.svg?raw'
+
 defineProps({
   count: { type: Number, default: 0 },
   finished: { type: Boolean, default: false },

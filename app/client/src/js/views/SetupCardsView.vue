@@ -17,7 +17,7 @@
           <span v-if="loadingAll" class="spinner" />
           <span v-else>{{ allSelected ? 'Alle abwählen' : 'Alle auswählen' }}</span>
         </button>
-        <button class="btn btn--ghost btn--sm" @click="showQr = true">📱 QR-Code</button>
+        <button class="btn btn--ghost btn--sm" @click="showQr = true"><span class="icon" v-html="QrIcon" /> QR-Code</button>
       </div>
     </div>
 
@@ -32,20 +32,25 @@
     </div>
 
     <div class="cards-list" ref="listEl" @scroll="onScroll">
-      <label
-        v-for="card in officialCards"
-        :key="card.id"
-        class="card-row"
-        :class="{ 'card-row--selected': selectedIds.has(card.id) }"
-      >
-        <input
-          type="checkbox"
-          :checked="selectedIds.has(card.id)"
-          @change="toggleCard(card.id)"
+      <template v-for="item in groupedCards" :key="item.type === 'header' ? `h-${item.level}` : item.card.id">
+        <div v-if="item.type === 'header'" class="level-group-header">
+          <span class="level-group-header__label">Level {{ item.level }}</span>
+          <span class="level-group-header__dot" :style="{ background: levelColor(item.level) }" />
+        </div>
+        <label
+          v-else
+          class="card-row"
+          :class="{ 'card-row--selected': selectedIds.has(item.card.id) }"
         >
-        <span class="card-row__dare">{{ card.dare }}</span>
-        <span v-if="card.adultsOnly" class="badge badge--adult">18+</span>
-      </label>
+          <input
+            type="checkbox"
+            :checked="selectedIds.has(item.card.id)"
+            @change="toggleCard(item.card.id)"
+          >
+          <span class="card-row__dare">{{ item.card.dare }}</span>
+          <span v-if="item.card.adultsOnly" class="badge badge--adult">18+</span>
+        </label>
+      </template>
 
       <div v-if="loadingCards" class="list-loading">
         <span class="spinner" /> Lade Karten…
@@ -103,6 +108,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useGameStore } from '../stores/gameStore.js'
 import { fetchCards } from '../api/cards.js'
 import QRCodeModal from '../components/QRCodeModal.vue'
+import QrIcon from '../../../icons/action_qr.svg?raw'
 
 const route = useRoute()
 const router = useRouter()
@@ -126,8 +132,27 @@ const listEl = ref(null)
 const isEdit = computed(() => route.query.edit === 'true')
 
 const allSelected = computed(() =>
-  officialCards.value.length > 0 && officialCards.value.every((c) => selectedIds.value.has(c.id))
+    officialCards.value.length > 0 && officialCards.value.every((c) => selectedIds.value.has(c.id))
 )
+
+const groupedCards = computed(() => {
+    const items = []
+    let currentLevel = null
+    for (const card of officialCards.value) {
+        if (card.level !== currentLevel) {
+            items.push({ type: 'header', level: card.level })
+            currentLevel = card.level
+        }
+        items.push({ type: 'card', card })
+    }
+    return items
+})
+
+function levelColor(level) {
+    if (level <= 3) return 'var(--color-success)'
+    if (level <= 6) return 'var(--color-warn)'
+    return 'var(--color-accent)'
+}
 
 let debounceTimer = null
 
