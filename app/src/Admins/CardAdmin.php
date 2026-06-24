@@ -22,4 +22,19 @@ class CardAdmin extends ModelAdmin
     ];
 
     private static $page_length = 50;
+
+    /**
+     * Export raw DB field names so the CSV can be re-imported without a custom column map.
+     * The default (summaryFields) exports Title (truncated) and RenderAdultsOnly ('Yes'/'No')
+     * which CsvBulkLoader cannot map back to the database.
+     */
+    public function getExportFields(): array
+    {
+        return [
+            'Dare'       => 'Dare',
+            'Level'      => 'Level',
+            'AdultsOnly' => 'AdultsOnly',
+            'Official'   => 'Official',
+        ];
+    }
 }

@@ -43,6 +43,13 @@ class Card extends DataObject
         'Games' => Game::class,
     ];
 
+    private static array $searchable_fields = [
+        'Dare',
+        'Level',
+        'AdultsOnly',
+        'Official',
+    ];
+
     private static string $default_sort = 'Official DESC, Level ASC, Dare ASC';
 
     public function getTitle(): string
