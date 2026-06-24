@@ -17,19 +17,21 @@ const PLACEHOLDERS = [
         pattern: /\[Player\]/g,
         preview: '???',
         resolve: ({ players }) => {
-            const strategies = [
-                () => {
-                    if (!players.length) return 'eine*r beliebigen Person der Gruppe'
-                    return players[Math.floor(Math.random() * players.length)].name
-                },
-                () => 'der Person links von dir',
-                () => 'der Person rechts von dir',
-                () => 'der Person gegenüber von dir',
-                () => 'eine*r Person deiner Wahl',
-                () => 'eine*r beliebigen Person der Gruppe',
-                () => 'eine*r von der Gruppe ausgewählten Person der Gruppe',
+            const nonPlayerOptions = [
+                'der Person links von dir',
+                'der Person rechts von dir',
+                'der Person gegenüber von dir',
+                'eine*r Person deiner Wahl',
+                'eine*r beliebigen Person der Gruppe',
+                'eine*r von der Gruppe ausgewählten Person der Gruppe',
             ]
-            return strategies[Math.floor(Math.random() * strategies.length)]()
+
+            // 50/50 between "draw a player" and "draw a non-player option",
+            // then pick uniformly within the chosen group.
+            if (players.length && Math.random() < 0.5) {
+                return players[Math.floor(Math.random() * players.length)].name
+            }
+            return nonPlayerOptions[Math.floor(Math.random() * nonPlayerOptions.length)]
         },
     },
     {
