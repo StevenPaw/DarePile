@@ -1,7 +1,7 @@
 <template>
   <div class="home">
     <div class="home__logo">
-      <span class="home__logo-icon">🃏</span>
+      <img :src="DarePileLogo" alt="DarePile Logo" class="home__logo-icon" />
       <h1 class="home__title">DarePile</h1>
       <p class="home__subtitle">Das Mutproben-Kartenspiel</p>
     </div>
@@ -29,6 +29,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useGameStore } from '../stores/gameStore.js'
+import DarePileLogo from '../../../icons/darepile_logo.svg'
 
 const router = useRouter()
 const store = useGameStore()

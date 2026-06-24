@@ -18,6 +18,12 @@ SilverStripe\ORM\Connect\MySQLDatabase:
 Atwx\ViteHelper\Helper\ViteHelper:
   editor_css: "app/client/src/scss/editor.scss"
 
+# Prevent Security controller (login/logout) from falling back to the Vue SPA template.
+# Without this, getTemplatesFor() resolves to Page.ss (the SPA shell) because no
+# Security_login.ss exists in this project.
+SilverStripe\Security\Security:
+  template_main: BlankPage
+
 SilverStripe\Core\Injector\Injector:
   DataListFilter.FulltextBoolean:
     class: App\ORM\FulltextBooleanFilter
