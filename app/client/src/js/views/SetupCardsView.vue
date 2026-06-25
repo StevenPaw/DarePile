@@ -9,15 +9,19 @@
     </header>
 
     <div class="card-count-bar">
-      <span :class="['count-badge', selectedIds.size >= 10 ? 'count-badge--ok' : 'count-badge--warn']">
-        {{ selectedIds.size }} / mind. 10 Karten
-      </span>
+      <span
+        class="count-badge"
+        :class="{ 'count-badge--ok': totalSelected >= 10 }"
+        :style="totalSelected < 10 ? { '--fill': (totalSelected / 10 * 100) + '%' } : {}"
+      >{{ totalSelected }} / mind. 10 Karten</span>
       <div class="card-count-bar__actions">
         <button class="btn btn--ghost btn--sm" :disabled="loadingCards" @click="toggleAll">
           <span v-if="loadingAll" class="spinner" />
           <span v-else>{{ allSelected ? 'Alle abwählen' : 'Alle auswählen' }}</span>
         </button>
-        <button class="btn btn--ghost btn--sm" @click="showQr = true"><span class="icon" v-html="QrIcon" /> QR-Code</button>
+        <button class="btn btn--ghost btn--sm" @click="showQr = true">
+          <span class="icon" v-html="QrIcon" /> QR-Code
+        </button>
       </div>
     </div>
 
@@ -31,41 +35,38 @@
       >
     </div>
 
+    <!-- Alle Karten in einer gemeinsamen Liste, nach Level sortiert -->
     <div class="cards-list" ref="listEl" @scroll="onScroll">
-      <template v-for="item in groupedCards" :key="item.type === 'header' ? `h-${item.level}` : item.card.id">
+      <template v-for="item in groupedCards" :key="item.type === 'header' ? `h-${item.level}` : item.card._key">
         <div v-if="item.type === 'header'" class="level-group-header">
           <span class="level-group-header__label">Level {{ item.level }}</span>
           <span class="level-group-header__dot" :style="{ background: levelColor(item.level) }" />
         </div>
-        <label
+        <ListCard
           v-else
-          class="card-row"
-          :class="{ 'card-row--selected': selectedIds.has(item.card.id) }"
-        >
-          <input
-            type="checkbox"
-            :checked="selectedIds.has(item.card.id)"
-            @change="toggleCard(item.card.id)"
-          >
-          <span class="card-row__dare">{{ item.card.dare }}</span>
-          <span v-if="item.card.adultsOnly" class="badge badge--adult">18+</span>
-        </label>
+          :dare="item.card.dare"
+          :level="item.card.level"
+          :adults-only="item.card.adultsOnly"
+          :is-custom="item.card.isCustom"
+          :selected="getSelected(item.card)"
+          @toggle="handleToggle(item.card)"
+        />
       </template>
 
       <div v-if="loadingCards" class="list-loading">
         <span class="spinner" /> Lade Karten…
       </div>
-
-      <p v-if="!loadingCards && officialCards.length === 0" class="list-empty">
+      <p v-if="!loadingCards && officialCards.length === 0 && allCustomCards.length === 0" class="list-empty">
         Keine Karten gefunden.
       </p>
     </div>
 
+    <!-- Eigene Karte hinzufügen -->
     <div class="custom-card-add">
       <button class="btn btn--secondary btn--sm" @click="showCustom = !showCustom">
         + Eigene Karte
       </button>
-      <div v-if="showCustom" class="custom-card-form">
+      <div v-if="showCustom" class="custom-card-form-expanded">
         <input
           v-model="customDare"
           class="input"
@@ -74,15 +75,24 @@
           maxlength="500"
           @keyup.enter="addCustom"
         >
+        <div class="add-card-options">
+          <div class="add-card-field">
+            <label class="field-label" for="setup-card-level">Level</label>
+            <select id="setup-card-level" v-model="customLevel" class="input input--select" aria-label="Level auswählen">
+              <option v-for="l in 10" :key="l" :value="l">Level {{ l }}</option>
+            </select>
+          </div>
+          <div class="add-card-field add-card-field--toggle">
+            <label class="toggle-label">
+              <input type="checkbox" v-model="customAdultsOnly" class="toggle-input" aria-label="FSK 18" />
+              <span class="toggle-track"><span class="toggle-thumb" /></span>
+              <span class="toggle-text">FSK 18</span>
+            </label>
+          </div>
+        </div>
         <button class="btn btn--primary btn--sm" :disabled="!customDare.trim()" @click="addCustom">
           Hinzufügen
         </button>
-      </div>
-      <div v-if="customCards.length" class="custom-cards-preview">
-        <div v-for="(c, i) in customCards" :key="i" class="chip">
-          {{ c.length > 50 ? c.slice(0, 50) + '…' : c }}
-          <button class="chip__remove" @click="customCards.splice(i, 1)">×</button>
-        </div>
       </div>
     </div>
 
@@ -90,7 +100,7 @@
       <p v-if="error" class="error-msg">{{ error }}</p>
       <button
         class="btn btn--primary btn--lg"
-        :disabled="selectedIds.size + customCards.length < 10 || saving"
+        :disabled="totalSelected < 10 || saving"
         @click="startGame"
       >
         <span v-if="saving" class="spinner" />
@@ -103,10 +113,11 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useGameStore } from '../stores/gameStore.js'
 import { fetchCards } from '../api/cards.js'
+import ListCard from '../components/ListCard.vue'
 import QRCodeModal from '../components/QRCodeModal.vue'
 import QrIcon from '../../../icons/action_qr.svg?raw'
 
@@ -116,8 +127,12 @@ const store = useGameStore()
 
 const officialCards = ref([])
 const selectedIds = ref(new Set())
+// { dare, level, adultsOnly, selected }
 const customCards = ref([])
+const deselectedCustomIds = ref(new Set())
 const customDare = ref('')
+const customLevel = ref(5)
+const customAdultsOnly = ref(false)
 const showCustom = ref(false)
 const showQr = ref(false)
 const search = ref('')
@@ -128,30 +143,103 @@ const error = ref(null)
 const page = ref(1)
 const hasMore = ref(true)
 const listEl = ref(null)
+const polling = ref(false)
+
+let pollInterval = null
 
 const isEdit = computed(() => route.query.edit === 'true')
 
+const savedCustomCards = computed(() =>
+  (store.game?.cards ?? []).filter((c) => !c.official)
+)
+
+// Alle eigenen Karten als einheitliches Format für die Liste
+const allCustomCards = computed(() => [
+  ...savedCustomCards.value.map((c) => ({
+    ...c,
+    _key: `saved-${c.id}`,
+    isCustom: true,
+    isLocal: false,
+  })),
+  ...customCards.value.map((c, i) => ({
+    ...c,
+    id: `local-${i}`,
+    _key: `local-${i}`,
+    isCustom: true,
+    isLocal: true,
+    localIndex: i,
+  })),
+])
+
+const activeCustomCount = computed(() =>
+  savedCustomCards.value.filter((c) => !deselectedCustomIds.value.has(c.id)).length +
+  customCards.value.filter((c) => c.selected).length
+)
+
+const totalSelected = computed(() =>
+  selectedIds.value.size + activeCustomCount.value
+)
+
 const allSelected = computed(() =>
-    officialCards.value.length > 0 && officialCards.value.every((c) => selectedIds.value.has(c.id))
+  officialCards.value.length > 0 &&
+  officialCards.value.every((c) => selectedIds.value.has(c.id)) &&
+  savedCustomCards.value.every((c) => !deselectedCustomIds.value.has(c.id)) &&
+  customCards.value.every((c) => c.selected)
 )
 
 const groupedCards = computed(() => {
-    const items = []
-    let currentLevel = null
-    for (const card of officialCards.value) {
-        if (card.level !== currentLevel) {
-            items.push({ type: 'header', level: card.level })
-            currentLevel = card.level
-        }
-        items.push({ type: 'card', card })
+  const merged = [
+    ...officialCards.value.map((c) => ({ ...c, _key: `off-${c.id}`, isCustom: false })),
+    ...allCustomCards.value,
+  ].sort((a, b) => a.level - b.level || (a.isCustom ? 1 : 0) - (b.isCustom ? 1 : 0))
+
+  const items = []
+  let currentLevel = null
+  for (const card of merged) {
+    if (card.level !== currentLevel) {
+      items.push({ type: 'header', level: card.level })
+      currentLevel = card.level
     }
-    return items
+    items.push({ type: 'card', card })
+  }
+  return items
 })
 
+function getSelected(card) {
+  if (!card.isCustom) return selectedIds.value.has(card.id)
+  if (card.isLocal) return customCards.value[card.localIndex]?.selected ?? true
+  return !deselectedCustomIds.value.has(card.id)
+}
+
+function handleToggle(card) {
+  if (!card.isCustom) return toggleCard(card.id)
+  if (card.isLocal) {
+    customCards.value[card.localIndex].selected = !customCards.value[card.localIndex].selected
+    return
+  }
+  toggleSavedCustom(card.id)
+}
+
 function levelColor(level) {
-    if (level <= 3) return 'var(--color-success)'
-    if (level <= 6) return 'var(--color-warn)'
-    return 'var(--color-accent)'
+  if (level <= 3) return 'var(--color-success)'
+  if (level <= 6) return 'var(--color-warn)'
+  return 'var(--color-accent)'
+}
+
+function toggleCard(id) {
+  if (selectedIds.value.has(id)) {
+    selectedIds.value.delete(id)
+  } else {
+    selectedIds.value.add(id)
+  }
+}
+
+function toggleSavedCustom(id) {
+  if (deselectedCustomIds.value.has(id)) {
+    deselectedCustomIds.value.delete(id)
+  } else {
+    deselectedCustomIds.value.add(id)
+  }
 }
 
 let debounceTimer = null
@@ -179,7 +267,7 @@ async function loadMore() {
     officialCards.value.push(...res.cards)
     hasMore.value = officialCards.value.length < res.total
     page.value++
-  } catch (e) {
+  } catch {
     error.value = 'Karten konnten nicht geladen werden.'
   } finally {
     loadingCards.value = false
@@ -189,19 +277,21 @@ async function loadMore() {
 async function toggleAll() {
   if (allSelected.value) {
     selectedIds.value = new Set()
+    deselectedCustomIds.value = new Set(savedCustomCards.value.map((c) => c.id))
+    customCards.value.forEach((c) => { c.selected = false })
     return
   }
   if (hasMore.value) {
     loadingAll.value = true
     try {
-      while (hasMore.value) {
-        await loadMore()
-      }
+      while (hasMore.value) await loadMore()
     } finally {
       loadingAll.value = false
     }
   }
   selectedIds.value = new Set(officialCards.value.map((c) => c.id))
+  deselectedCustomIds.value = new Set()
+  customCards.value.forEach((c) => { c.selected = true })
 }
 
 function onScroll() {
@@ -210,30 +300,31 @@ function onScroll() {
   if (scrollHeight - scrollTop - clientHeight < 100) loadMore()
 }
 
-function toggleCard(id) {
-  if (selectedIds.value.has(id)) {
-    selectedIds.value.delete(id)
-  } else {
-    selectedIds.value.add(id)
-  }
-}
-
 function addCustom() {
   const dare = customDare.value.trim()
-  if (dare) {
-    customCards.value.push(dare)
-    customDare.value = ''
-    showCustom.value = false
-  }
+  if (!dare) return
+  customCards.value.push({ dare, level: customLevel.value, adultsOnly: customAdultsOnly.value, selected: true })
+  customDare.value = ''
+  customLevel.value = 5
+  customAdultsOnly.value = false
+  showCustom.value = false
 }
 
 async function startGame() {
   saving.value = true
   error.value = null
   try {
-    await store.saveCards([...selectedIds.value], customCards.value)
+    const allCustom = [
+      ...savedCustomCards.value
+        .filter((c) => !deselectedCustomIds.value.has(c.id))
+        .map(({ dare, level, adultsOnly }) => ({ dare, level, adultsOnly })),
+      ...customCards.value
+        .filter((c) => c.selected)
+        .map(({ dare, level, adultsOnly }) => ({ dare, level, adultsOnly })),
+    ]
+    await store.saveCards([...selectedIds.value], allCustom)
     router.push({ name: 'game', params: { hash: route.params.hash } })
-  } catch (e) {
+  } catch {
     error.value = 'Fehler beim Speichern der Karten.'
   } finally {
     saving.value = false
@@ -249,11 +340,20 @@ onMounted(async () => {
     selectedIds.value = new Set(
       gameCards.filter((c) => c.official).map((c) => c.id)
     )
-    customCards.value = gameCards
-      .filter((c) => !c.official)
-      .map((c) => c.dare)
+    customCards.value = []
+    deselectedCustomIds.value = new Set()
   }
+
+  polling.value = true
+  pollInterval = setInterval(() => store.refreshGame(route.params.hash), 5000)
+
   loadMore()
 })
-</script>
 
+onUnmounted(() => {
+  if (pollInterval) {
+    clearInterval(pollInterval)
+    pollInterval = null
+  }
+})
+</script>

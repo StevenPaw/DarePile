@@ -100,14 +100,23 @@ export const useGameStore = defineStore('game', () => {
         })
     }
 
-    async function addCard(dare) {
+    async function addCard(dare, level = 1, adultsOnly = false) {
         return withLoading(async () => {
-            const card = await gameApi.addCustomCard(hash.value, dare)
+            const card = await gameApi.addCustomCard(hash.value, dare, level, adultsOnly)
             if (game.value) {
                 game.value.cards = [...(game.value.cards ?? []), card]
             }
             return card
         })
+    }
+
+    async function refreshGame(gameHash) {
+        try {
+            const data = await gameApi.getGame(gameHash)
+            if (game.value && game.value.hash === gameHash) {
+                game.value.cards = data.cards
+            }
+        } catch { /* silent */ }
     }
 
     async function draw(cardId) {
@@ -153,6 +162,7 @@ export const useGameStore = defineStore('game', () => {
         setup,
         saveCards,
         addCard,
+        refreshGame,
         draw,
         doAction,
         resetDeck,

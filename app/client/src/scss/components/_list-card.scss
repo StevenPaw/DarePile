@@ -1,0 +1,63 @@
+.list-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.55rem 0.75rem;
+    border-radius: calc(var(--radius) - 4px);
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    user-select: none;
+
+    &:hover {
+        background: var(--color-surface-2);
+    }
+
+    &--on {
+        background: color-mix(in srgb, var(--color-accent) 14%, var(--color-surface-2));
+        border-color: color-mix(in srgb, var(--color-accent) 50%, transparent);
+    }
+
+    &__body {
+        flex: 1;
+        min-width: 0;
+    }
+
+    &__dare {
+        font-size: 0.875rem;
+        color: var(--color-text);
+        line-height: 1.4;
+    }
+
+    &__meta {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        flex-shrink: 0;
+    }
+
+    &__level {
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: var(--color-text-muted);
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: 4px;
+        padding: 0.1em 0.4em;
+    }
+
+    &__indicator {
+        width: 0.45rem;
+        height: 0.45rem;
+        border-radius: 50%;
+        background: var(--color-border);
+        transition: background 0.15s, box-shadow 0.15s;
+        flex-shrink: 0;
+
+        &--on {
+            background: var(--color-accent);
+            box-shadow: 0 0 5px color-mix(in srgb, var(--color-accent) 60%, transparent);
+        }
+    }
+}

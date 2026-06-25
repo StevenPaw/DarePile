@@ -6,6 +6,32 @@
     position: relative;
 }
 
+.game-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.35rem 1rem;
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-surface);
+
+    &__logo {
+        height: 1.4rem;
+        width: auto;
+        opacity: 0.85;
+    }
+
+    &__legal {
+        font-size: 0.7rem;
+        color: var(--color-text-muted);
+        text-decoration: none;
+        transition: color 0.15s;
+
+        &:hover {
+            color: var(--color-text);
+        }
+    }
+}
+
 .game-header {
     display: flex;
     align-items: center;
@@ -102,6 +128,89 @@
     border: none;
     border-top: 1px solid var(--color-border);
     margin: 0;
+}
+
+/* ── Add-Card modal extras ───────────────────────────────────── */
+.add-card-options {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.add-card-field {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+
+    .field-label {
+        margin: 0;
+        margin-right: 5px;
+    }
+
+    &--toggle {
+        justify-content: flex-end;
+        padding-bottom: 0.1rem;
+    }
+}
+
+.input--select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%238888aa' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    padding-right: 2.2rem;
+    cursor: pointer;
+}
+
+.toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.toggle-input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-track {
+    width: 2.4rem;
+    height: 1.35rem;
+    background: var(--color-border);
+    border-radius: 999px;
+    position: relative;
+    transition: background 0.2s;
+    flex-shrink: 0;
+
+    .toggle-input:checked ~ & {
+        background: var(--color-accent);
+    }
+}
+
+.toggle-thumb {
+    position: absolute;
+    top: 0.175rem;
+    left: 0.175rem;
+    width: 1rem;
+    height: 1rem;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.2s;
+
+    .toggle-input:checked ~ .toggle-track & {
+        transform: translateX(1.05rem);
+    }
+}
+
+.toggle-text {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-text);
 }
 
 .modal-qr-hint {

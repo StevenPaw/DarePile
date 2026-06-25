@@ -1,0 +1,107 @@
+.card-overview {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem 1.25rem;
+    gap: 1.25rem;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.overview-filter {
+    display: flex;
+    gap: 0.5rem;
+
+    &__btn {
+        flex: 1;
+        padding: 0.45rem 0;
+        font-size: 0.875rem;
+        font-weight: 600;
+        border-radius: var(--radius-sm);
+        border: 2px solid var(--color-border);
+        background: var(--color-surface-2);
+        color: var(--color-text-muted);
+        cursor: pointer;
+        transition: border-color 0.15s, color 0.15s, background 0.15s;
+
+        &:hover {
+            color: var(--color-text);
+        }
+
+        &--active {
+            border-color: var(--color-accent);
+            background: color-mix(in srgb, var(--color-accent) 12%, var(--color-surface-2));
+            color: var(--color-text);
+        }
+    }
+}
+
+.overview-loading {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.overview-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding-bottom: 2rem;
+}
+
+.overview-level-header {
+    margin-top: 0.5rem;
+}
+
+.overview-level-count {
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+    margin-left: auto;
+}
+
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+
+    @media (min-width: 600px) {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.card-tile {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+
+    .badge {
+        margin: 0 auto;
+    }
+
+    &__dare {
+        font-size: 0.825rem;
+        color: var(--color-text);
+        line-height: 1.4;
+        flex: 1;
+    }
+}
+
+.placeholder {
+    background: color-mix(in srgb, var(--color-warn) 22%, transparent);
+    color: var(--color-warn);
+    border-radius: 3px;
+    padding: 0.05em 0.25em;
+    font-style: normal;
+}
+
+.overview-empty {
+    text-align: center;
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+    padding: 2rem;
+}

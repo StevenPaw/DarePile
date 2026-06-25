@@ -19,9 +19,20 @@
       >
         Spiel fortsetzen
       </button>
+
+      <button
+        class="btn btn--secondary btn--lg"
+        @click="router.push({ name: 'card-overview' })"
+      >
+        Alle Karten ansehen
+      </button>
     </div>
 
     <p v-if="error" class="error-msg">{{ error }}</p>
+
+    <router-link :to="{ name: 'legal' }" class="home__legal-link">
+      Impressum & Datenschutz
+    </router-link>
   </div>
 </template>
 
@@ -58,4 +69,3 @@ async function resumeGame() {
   router.push({ name: 'game', params: { hash: savedHash.value } })
 }
 </script>
-

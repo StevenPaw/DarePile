@@ -3,6 +3,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 0.5rem;
+    flex-direction: column;
 }
 
 .card-count-bar__actions {
@@ -16,16 +17,34 @@
     font-weight: 600;
     padding: 0.3rem 0.75rem;
     border-radius: 999px;
-}
-
-.count-badge--ok {
-    background: color-mix(in srgb, var(--color-success) 20%, transparent);
-    color: var(--color-success);
-}
-
-.count-badge--warn {
-    background: color-mix(in srgb, var(--color-warn) 20%, transparent);
+    position: relative;
+    overflow: hidden;
+    background: var(--color-surface-2);
     color: var(--color-warn);
+    transition: background 0.3s, color 0.3s;
+    width: 100%;
+    text-align: center;
+
+    &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: var(--fill, 0%);
+        background: color-mix(in srgb, var(--color-warn) 30%, transparent);
+        transition: width 0.35s ease;
+        pointer-events: none;
+    }
+
+    &--ok {
+        background: color-mix(in srgb, var(--color-success) 20%, transparent);
+        color: var(--color-success);
+
+        &::before {
+            display: none;
+        }
+    }
 }
 
 .search-row {
@@ -54,8 +73,10 @@
     gap: 0.75rem;
     padding: 0.6rem 0.5rem;
     border-radius: calc(var(--radius) - 4px);
+    border: 1px solid transparent;
+    background: var(--color-surface);
     cursor: pointer;
-    transition: background 0.1s;
+    transition: background 0.15s, border-color 0.15s;
 
     input[type="checkbox"] {
         flex-shrink: 0;
@@ -65,9 +86,13 @@
         height: 1rem;
     }
 
-    &:hover,
-    &.card-row--selected {
+    &:hover {
         background: var(--color-surface-2);
+    }
+
+    &.card-row--selected {
+        background: color-mix(in srgb, var(--color-accent) 14%, var(--color-surface-2));
+        border-color: color-mix(in srgb, var(--color-accent) 45%, transparent);
     }
 }
 
@@ -76,6 +101,16 @@
     font-size: 0.875rem;
     color: var(--color-text);
     line-height: 1.4;
+}
+
+.badge--custom {
+    font-size: 0.65rem;
+    padding: 0.15em 0.45em;
+    border-radius: 4px;
+    font-weight: 700;
+    flex-shrink: 0;
+    background: color-mix(in srgb, var(--color-success) 20%, transparent);
+    color: var(--color-success);
 }
 
 .badge--adult {
@@ -100,19 +135,117 @@
     gap: 0.5rem;
 }
 
+/* ── Saved custom cards (edit mode, live from store) ────────── */
+.custom-saved-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.custom-saved-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    &__label {
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--color-text-muted);
+    }
+
+    &__count {
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: var(--color-text-muted);
+        background: var(--color-surface-2);
+        border-radius: 999px;
+        padding: 0.1em 0.5em;
+    }
+
+    &__sync {
+        font-size: 0.75rem;
+        color: var(--color-success);
+        animation: spin 2s linear infinite;
+        display: inline-block;
+    }
+}
+
+.custom-saved-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    max-height: 20vh;
+    overflow-y: auto;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 0.4rem;
+}
+
+.custom-saved-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.45rem 0.5rem;
+    border-radius: calc(var(--radius) - 4px);
+    background: var(--color-surface-2);
+
+    &__dare {
+        font-size: 0.875rem;
+        color: var(--color-text);
+        line-height: 1.4;
+        flex: 1;
+    }
+}
+
+.custom-saved-row__meta {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex-shrink: 0;
+}
+
+.custom-saved-level {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--color-text-muted);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    padding: 0.1em 0.4em;
+}
+
+.custom-saved-row--new {
+    border-left: 2px solid var(--color-accent);
+}
+
+.custom-saved-remove {
+    background: none;
+    border: none;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    font-size: 1.1rem;
+    line-height: 1;
+    padding: 0 0.1rem;
+    flex-shrink: 0;
+
+    &:hover {
+        color: var(--color-accent);
+    }
+}
+
 .custom-card-add {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
 }
 
-.custom-card-form {
+.custom-card-form-expanded {
     display: flex;
-    gap: 0.5rem;
-
-    .input {
-        flex: 1;
-    }
+    flex-direction: column;
+    gap: 0.6rem;
 }
 
 .custom-cards-preview {

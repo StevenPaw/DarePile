@@ -1,5 +1,10 @@
 <template>
   <div class="game-view">
+    <div class="game-topbar">
+      <img :src="DarePileLogo" alt="DarePile" class="game-topbar__logo" />
+      <router-link :to="{ name: 'legal' }" class="game-topbar__legal">Impressum & Datenschutz</router-link>
+    </div>
+
     <header class="game-header">
       <button class="btn btn--ghost btn--sm" @click="router.push({ name: 'stats', params: { hash } })" title="Statistiken" aria-label="Statistiken">
         <span class="icon" v-html="StatisticsIcon" />
@@ -75,6 +80,21 @@
           rows="3"
           maxlength="500"
         />
+        <div class="add-card-options">
+          <div class="add-card-field">
+            <label class="field-label" for="card-level">Level</label>
+            <select id="card-level" v-model="newLevel" class="input input--select" aria-label="Level auswählen">
+              <option v-for="l in 10" :key="l" :value="l">Level {{ l }}</option>
+            </select>
+          </div>
+          <div class="add-card-field add-card-field--toggle">
+            <label class="toggle-label">
+              <input type="checkbox" v-model="newAdultsOnly" class="toggle-input" aria-label="FSK 18" />
+              <span class="toggle-track"><span class="toggle-thumb" /></span>
+              <span class="toggle-text">FSK 18</span>
+            </label>
+          </div>
+        </div>
         <div class="modal-actions">
           <button class="btn btn--ghost" @click="showAddCard = false">Abbrechen</button>
           <button class="btn btn--primary" :disabled="!newDare.trim() || addingCard" @click="submitNewCard">
@@ -104,6 +124,7 @@ import CardPile from '../components/CardPile.vue'
 import DrawnCardModal from '../components/DrawnCardModal.vue'
 import QRCodeModal from '../components/QRCodeModal.vue'
 import LevelRangeSlider from '../components/LevelRangeSlider.vue'
+import DarePileLogo from '../../../icons/darepile_logo.svg'
 import StatisticsIcon from '../../../icons/action_statistics.svg?raw'
 import ShuffleIcon from '../../../icons/action_shuffle.svg?raw'
 import SettingsIcon from '../../../icons/action_settings.svg?raw'
@@ -141,6 +162,8 @@ const drawnCard = ref(null)
 const showAddCard = ref(false)
 const showQr = ref(false)
 const newDare = ref('')
+const newLevel = ref(5)
+const newAdultsOnly = ref(false)
 const addingCard = ref(false)
 const reshuffling = ref(false)
 const hint = ref(null)
@@ -201,8 +224,10 @@ async function submitNewCard() {
   if (!dare) return
   addingCard.value = true
   try {
-    await store.addCard(dare)
+    await store.addCard(dare, newLevel.value, newAdultsOnly.value)
     newDare.value = ''
+    newLevel.value = 5
+    newAdultsOnly.value = false
     showAddCard.value = false
     showHint('Karte hinzugefügt!')
   } catch {
@@ -218,4 +243,3 @@ onMounted(async () => {
   }
 })
 </script>
-

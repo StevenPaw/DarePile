@@ -7,9 +7,12 @@
 @use "views/game";
 @use "views/stats";
 @use "views/add-card";
+@use "views/card-overview";
+@use "views/legal";
 @use "components/card-pile";
 @use "components/drawn-card-modal";
 @use "components/qr-code-modal";
+@use "components/list-card";
 
 /* ── Design tokens ───────────────────────────────────────────── */
 :root {

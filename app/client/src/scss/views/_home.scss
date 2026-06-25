@@ -42,3 +42,16 @@
     width: 100%;
     max-width: 320px;
 }
+
+.home__legal-link {
+    position: absolute;
+    bottom: 1.25rem;
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    transition: color 0.15s;
+
+    &:hover {
+        color: var(--color-text);
+    }
+}

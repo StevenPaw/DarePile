@@ -130,16 +130,24 @@ class GameApiController extends RequestHandler
         }
 
         if (!empty($body['customCards']) && is_array($body['customCards'])) {
-            foreach ($body['customCards'] as $dare) {
-                $dare = trim((string) $dare);
+            foreach ($body['customCards'] as $item) {
+                if (is_string($item)) {
+                    $dare = trim($item);
+                    $level = 1;
+                    $adultsOnly = false;
+                } else {
+                    $dare = trim((string) ($item['dare'] ?? ''));
+                    $level = isset($item['level']) ? max(1, min(10, (int) $item['level'])) : 1;
+                    $adultsOnly = !empty($item['adultsOnly']);
+                }
                 if ($dare === '') {
                     continue;
                 }
                 $card = Card::create();
                 $card->Dare = $dare;
-                $card->Level = 1;
+                $card->Level = $level;
                 $card->Official = false;
-                $card->AdultsOnly = false;
+                $card->AdultsOnly = $adultsOnly;
                 $card->write();
                 $game->Cards()->add($card);
             }
@@ -159,9 +167,9 @@ class GameApiController extends RequestHandler
 
         $card = Card::create();
         $card->Dare = $dare;
-        $card->Level = 1;
+        $card->Level = isset($body['level']) ? max(1, min(10, (int) $body['level'])) : 1;
         $card->Official = false;
-        $card->AdultsOnly = false;
+        $card->AdultsOnly = !empty($body['adultsOnly']);
         $card->write();
 
         $game->Cards()->add($card);
