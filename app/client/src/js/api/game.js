@@ -6,7 +6,11 @@ async function request(url, options = {}) {
         ...options,
     })
     const data = await res.json()
-    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`)
+    if (!res.ok) {
+        const error = new Error(data.error || `HTTP ${res.status}`)
+        error.status = res.status
+        throw error
+    }
     return data
 }
 

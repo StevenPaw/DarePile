@@ -314,15 +314,16 @@ async function startGame() {
   saving.value = true
   error.value = null
   try {
-    const allCustom = [
-      ...savedCustomCards.value
-        .filter((c) => !deselectedCustomIds.value.has(c.id))
-        .map(({ dare, level, adultsOnly }) => ({ dare, level, adultsOnly })),
-      ...customCards.value
-        .filter((c) => c.selected)
-        .map(({ dare, level, adultsOnly }) => ({ dare, level, adultsOnly })),
-    ]
-    await store.saveCards([...selectedIds.value], allCustom)
+    // Custom cards that already exist on the server (added via QR code or in an
+    // earlier save) are referenced by ID. Sending their text again would make
+    // the backend create a duplicate card each time.
+    const savedCustomIds = savedCustomCards.value
+      .filter((c) => !deselectedCustomIds.value.has(c.id))
+      .map((c) => c.id)
+    const newCustom = customCards.value
+      .filter((c) => c.selected)
+      .map(({ dare, level, adultsOnly }) => ({ dare, level, adultsOnly }))
+    await store.saveCards([...selectedIds.value, ...savedCustomIds], newCustom)
     router.push({ name: 'game', params: { hash: route.params.hash } })
   } catch {
     error.value = 'Fehler beim Speichern der Karten.'

@@ -13,7 +13,7 @@
       </button>
 
       <button
-        v-if="savedHash"
+        v-if="resumeTarget"
         class="btn btn--secondary btn--lg"
         @click="resumeGame"
       >
@@ -40,16 +40,36 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useGameStore } from '../stores/gameStore.js'
+import { getGame } from '../api/game.js'
 import DarePileLogo from '../../../icons/darepile_logo.svg'
 
 const router = useRouter()
 const store = useGameStore()
 const savedHash = ref(null)
+// Route name to resume into, or null if there is nothing to resume
+const resumeTarget = ref(null)
 const loading = ref(false)
 const error = ref(null)
 
-onMounted(() => {
-  savedHash.value = localStorage.getItem('darepile_hash')
+onMounted(async () => {
+  const hash = localStorage.getItem('darepile_hash')
+  if (!hash) return
+
+  try {
+    const game = await getGame(hash)
+    savedHash.value = hash
+    if (!game.players?.length) {
+      resumeTarget.value = 'setup-players'
+    } else if (!game.cards?.length) {
+      resumeTarget.value = 'setup-cards'
+    } else {
+      resumeTarget.value = 'game'
+    }
+  } catch (e) {
+    // Game no longer exists on the server: forget it.
+    // On network errors keep the hash so it can be resumed once online again.
+    if (e.status === 404) store.clearGame()
+  }
 })
 
 async function startGame() {
@@ -66,6 +86,6 @@ async function startGame() {
 }
 
 async function resumeGame() {
-  router.push({ name: 'game', params: { hash: savedHash.value } })
+  router.push({ name: resumeTarget.value, params: { hash: savedHash.value } })
 }
 </script>
