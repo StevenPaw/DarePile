@@ -23,7 +23,7 @@
         "cambis/silverstan": "^2",
         "squizlabs/php_codesniffer": "^4",
         "phpstan/extension-installer": "^1.0",
-        "phpunit/phpunit": "^13"
+        "phpunit/phpunit": "^12"
     },
     "autoload": {
         "psr-4": {
@@ -65,6 +65,9 @@
             "silverstripe/vendor-plugin": true,
             "php-http/discovery": true,
             "phpstan/extension-installer": true
+        },
+        "platform": {
+            "php": "8.3.0"
         }
     }
 }
