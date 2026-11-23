@@ -15,7 +15,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          # Vue Router 5 / Vite 8 dependencies need Node >= 24.11 (same as DDEV locally)
+          node-version: '24'
 
       - name: Install frontend dependencies
         run: yarn install --frozen-lockfile
