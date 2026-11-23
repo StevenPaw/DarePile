@@ -2,7 +2,12 @@
 
 namespace App\Admin;
 
+use App\Admin\BulkAction\SetOfficialHandler;
+use App\Admin\BulkAction\SetUnofficialHandler;
 use App\Models\Card;
+use Colymba\BulkManager\BulkAction\DeleteHandler;
+use Colymba\BulkManager\BulkAction\EditHandler;
+use Colymba\BulkManager\BulkManager;
 use SilverStripe\Admin\ModelAdmin;
 use SilverStripe\Forms\Form;
 use SilverStripe\Forms\GridField\GridField;
@@ -76,6 +81,15 @@ class CardAdmin extends ModelAdmin
                     ]);
                 }
             }
+
+            // Bulk actions: checkboxes per row plus an action dropdown above the grid
+            $bulkManager = BulkManager::create(['Dare', 'Level', 'AdultsOnly'], false)
+                ->addBulkAction(EditHandler::class)
+                ->addBulkAction(
+                    $this->modelTab === self::TAB_OFFICIAL ? SetUnofficialHandler::class : SetOfficialHandler::class
+                )
+                ->addBulkAction(DeleteHandler::class);
+            $config->addComponent($bulkManager);
 
             // New cards created in the "Official" tab are official by default
             $detailForm = $config->getComponentByType(GridFieldDetailForm::class);

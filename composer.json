@@ -14,7 +14,8 @@
         "symbiote/silverstripe-gridfieldextensions": "^5.2",
         "stevenpaw/silverstripe-cms-backend-theme": "^6.2",
         "stevenpaw/stevens-silverstripe-icons": "dev-main",
-        "silverstripe/login-forms": "^6.2"
+        "silverstripe/login-forms": "^6.2",
+        "colymba/gridfield-bulk-editing-tools": "^5.2"
     },
     "require-dev": {
         "silverleague/ideannotator": "^4.0",

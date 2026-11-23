@@ -1,0 +1,36 @@
+SilverStripe\SiteConfig\SiteConfig:
+  cms_logo: "_resources/app/client/icons/darepile_logo.svg" # Path to logo
+  cms_logo_width: 128 # Optional width constraint
+
+SilverStripe\Admin\LeftAndMain:
+  cms_background: "#0F0F1A"
+  cms_border_color: "#000"
+  cms_color: "#fff"
+  cms_hover_background: "#3A667C"
+  cms_hover_color: currentColor
+  cms_active_background: "#3A667C"
+  cms_active_color: currentColor
+  cms_drawer_background: "#2A3952"
+  cms_drawer_color: "inherit"
+  cms_icon_color: #fff
+  menu_groups:
+    TaskManagement:
+      icon_class: "fa fa-tasks" # (optional) Defaults to 'fa fa-folder'
+      priority: -10 # (optional) Defaults to menu item order
+      items:
+        - App-Admins-TaskAdmin
+    LandingPage:
+      icon_class: "fa fa-home" # (optional) Defaults to 'fa fa-folder'
+      priority: -50 # (optional) Defaults to menu item order
+      items:
+        - SilverStripe-CMS-Controllers-CMSMain
+        - SilverStripe-AssetAdmin-Controller-AssetAdmin
+    Other:
+      icon_class: "fa fa-folder" # (optional) Defaults to 'fa fa-folder'
+      priority: -100 # (optional) Defaults to menu item order
+      items:
+        - SilverStripe-SiteConfig-SiteConfigLeftAndMain
+        - SilverStripe-Admin-SecurityAdmin
+        - SilverStripe-CampaignAdmin-CampaignAdmin
+        - SilverStripe-VersionedAdmin-ArchiveAdmin
+        - SilverStripe-Reports-ReportAdmin
