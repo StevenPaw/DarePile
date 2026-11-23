@@ -1,5 +1,7 @@
 <template>
-  <div class="game-view">
+  <HandHostView v-if="store.gameType === 'Hand'" :hash="hash" />
+
+  <div v-else class="game-view">
     <div class="game-topbar">
       <img :src="DarePileLogo" alt="DarePile" class="game-topbar__logo" />
       <router-link :to="{ name: 'legal' }" class="game-topbar__legal">Impressum & Datenschutz</router-link>
@@ -26,6 +28,10 @@
     </header>
 
     <div class="game-area" @click.self="skipCard">
+      <p v-if="turnPlayer && availableCards.length > 0" class="turn-banner">
+        <strong>{{ turnPlayer.name }}</strong>, ziehe deine Karte
+      </p>
+
       <CardPile
         :count="availableCards.length"
         :finished="availableCards.length === 0"
@@ -64,13 +70,14 @@
       v-if="drawnCard"
       :card="drawnCard"
       :players="players"
+      :fixed-player="turnPlayer"
       @complete="onComplete"
       @fail="onFail"
       @return-card="onReturn"
       @skip="onSkip"
     />
 
-    <div v-if="showAddCard" class="modal-overlay" @click.self="showAddCard = false">
+    <div v-if="showAddCard" class="modal-overlay modal-overlay--top" @click.self="showAddCard = false">
       <div class="modal-box">
         <h3 class="modal-title">Karte hinzufügen</h3>
         <textarea
@@ -124,6 +131,7 @@ import CardPile from '../components/CardPile.vue'
 import DrawnCardModal from '../components/DrawnCardModal.vue'
 import QRCodeModal from '../components/QRCodeModal.vue'
 import LevelRangeSlider from '../components/LevelRangeSlider.vue'
+import HandHostView from '../components/HandHostView.vue'
 import DarePileLogo from '../../../icons/darepile_logo.svg'
 import StatisticsIcon from '../../../icons/action_statistics.svg?raw'
 import ShuffleIcon from '../../../icons/action_shuffle.svg?raw'
@@ -139,6 +147,8 @@ const store = useGameStore()
 const hash = computed(() => route.params.hash)
 const players = computed(() => store.players)
 const availableCards = computed(() => store.availableCards)
+// "Turns" mode: whose turn it is (null in "Cardpile" mode)
+const turnPlayer = computed(() => (store.gameType === 'Turns' ? store.currentPlayer : null))
 
 const noCardsInRange = computed(() =>
     store.cards.filter(

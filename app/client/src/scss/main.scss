@@ -13,6 +13,8 @@
 @use "components/drawn-card-modal";
 @use "components/qr-code-modal";
 @use "components/list-card";
+@use "components/dice";
+@use "components/hand";
 
 /* ── Design tokens ───────────────────────────────────────────── */
 :root {
@@ -123,6 +125,26 @@ body {
     background: var(--color-accent);
     color: #fff;
     border-color: var(--color-accent);
+}
+
+.btn--next {
+    background: var(--color-accent);
+    color: #fff;
+    border-color: var(--color-accent);
+
+    &:not(:disabled):hover {
+        opacity: 0.9;
+    }
+}
+
+.btn--back {
+    background: var(--color-surface-2);
+    color: var(--color-text);
+    border-color: var(--color-border);
+
+    &:not(:disabled):hover {
+        border-color: var(--color-text-muted);
+    }
 }
 
 .btn--icon {

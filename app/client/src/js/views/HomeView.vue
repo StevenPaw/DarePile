@@ -59,7 +59,7 @@ onMounted(async () => {
     const game = await getGame(hash)
     savedHash.value = hash
     if (!game.players?.length) {
-      resumeTarget.value = 'setup-players'
+      resumeTarget.value = 'setup-settings'
     } else if (!game.cards?.length) {
       resumeTarget.value = 'setup-cards'
     } else {
@@ -77,7 +77,7 @@ async function startGame() {
   error.value = null
   try {
     const hash = await store.createGame()
-    router.push({ name: 'setup-players', params: { hash } })
+    router.push({ name: 'setup-settings', params: { hash } })
   } catch (e) {
     error.value = 'Spiel konnte nicht erstellt werden. Bitte prüfe die Verbindung.'
   } finally {

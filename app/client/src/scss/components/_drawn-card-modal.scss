@@ -162,3 +162,15 @@
     gap: 0.5rem;
     justify-content: center;
 }
+
+// "Reihum" mode: replaces the player selection
+.turn-label {
+    margin: 0;
+    text-align: center;
+    font-size: 1rem;
+    color: var(--color-text);
+
+    strong {
+        color: var(--color-accent);
+    }
+}

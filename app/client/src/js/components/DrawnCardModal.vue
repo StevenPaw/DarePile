@@ -1,7 +1,11 @@
 <template>
   <div class="card-overlay" @click.self="$emit('skip')">
 
-    <div v-if="flipped" class="player-select-bar">
+    <div v-if="flipped && fixedPlayer" class="player-select-bar">
+      <p class="turn-label">Aufgabe für <strong>{{ fixedPlayer.name }}</strong></p>
+    </div>
+
+    <div v-else-if="flipped" class="player-select-bar">
       <p class="action-panel__label">Wer macht's?</p>
       <div class="player-select">
         <button
@@ -69,12 +73,14 @@ import { resolvePlaceholders } from '../utils/placeholders.js'
 const props = defineProps({
   card: { type: Object, required: true },
   players: { type: Array, default: () => [] },
+  // "Turns" mode: the player whose turn it is; skips the player selection
+  fixedPlayer: { type: Object, default: null },
 })
 
 defineEmits(['complete', 'fail', 'return-card', 'skip'])
 
 const flipped = ref(false)
-const selectedPlayer = ref(null)
+const selectedPlayer = ref(props.fixedPlayer?.id ?? null)
 const resolvedDare = ref([])
 
 function resolveCard(excludePlayerId = null) {
@@ -90,7 +96,7 @@ function resolveCard(excludePlayerId = null) {
 watch(selectedPlayer, (playerId) => resolveCard(playerId))
 
 onMounted(() => {
-  resolveCard()
+  resolveCard(selectedPlayer.value)
   setTimeout(() => { flipped.value = true }, 50)
 })
 </script>

@@ -31,6 +31,11 @@ export const useGameStore = defineStore('game', () => {
     const players = computed(() => game.value?.players ?? [])
     const cards = computed(() => game.value?.cards ?? [])
     const usedCardIds = computed(() => game.value?.usedCardIds ?? [])
+    const gameType = computed(() => game.value?.gameType ?? 'Cardpile')
+    // Player whose turn it is ("Turns" mode only, otherwise null)
+    const currentPlayer = computed(() =>
+        players.value.find((p) => p.id === game.value?.currentPlayerId) ?? null
+    )
 
     const levelMin = ref(1)
     const levelMax = ref(10)
@@ -84,14 +89,16 @@ export const useGameStore = defineStore('game', () => {
         })
     }
 
-    async function setup(adultType, gameType, playerNames) {
+    // settings: { adultType, gameType, handSize, players } — omitted keys stay unchanged
+    async function setup(settings) {
         return withLoading(async () => {
-            game.value = await gameApi.setupGame(hash.value, {
-                adultType,
-                gameType,
-                players: playerNames,
-            })
+            game.value = await gameApi.setupGame(hash.value, settings)
         })
+    }
+
+    // "Hand" mode host actions: deal, range, reshuffle, roll-missing, remove
+    async function handAction(action, body = {}) {
+        game.value = await gameApi.handAction(hash.value, action, body)
     }
 
     async function saveCards(cardIds, customCards = []) {
@@ -110,11 +117,17 @@ export const useGameStore = defineStore('game', () => {
         })
     }
 
-    async function refreshGame(gameHash) {
+    // Polling: by default only the card list is taken over (card selection);
+    // full: true replaces the whole game state ("Handkarten" mode)
+    async function refreshGame(gameHash, { full = false } = {}) {
         try {
             const data = await gameApi.getGame(gameHash)
             if (game.value && game.value.hash === gameHash) {
-                game.value.cards = data.cards
+                if (full) {
+                    game.value = data
+                } else {
+                    game.value.cards = data.cards
+                }
             }
         } catch { /* silent */ }
     }
@@ -154,12 +167,15 @@ export const useGameStore = defineStore('game', () => {
         players,
         cards,
         usedCardIds,
+        gameType,
+        currentPlayer,
         availableCards,
         levelMin,
         levelMax,
         createGame,
         loadGame,
         setup,
+        handAction,
         saveCards,
         addCard,
         refreshGame,

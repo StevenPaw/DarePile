@@ -68,3 +68,67 @@
     line-height: 1;
     padding: 0;
 }
+
+// Number stepper (e.g. hand size)
+.stepper {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.stepper__btn {
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 50%;
+    border: 2px solid var(--color-border);
+    background: var(--color-surface-2);
+    color: var(--color-text);
+    font-size: 1.4rem;
+    line-height: 1;
+    cursor: pointer;
+
+    &:disabled {
+        opacity: 0.35;
+        cursor: default;
+    }
+}
+
+.stepper__value {
+    min-width: 2rem;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.setup-hint {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    margin: 0 0 0.75rem;
+}
+
+.join-qr {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.25rem;
+}
+
+// Bottom navigation: back on the left, next on the right
+.setup-nav {
+    display: flex;
+    gap: 0.75rem;
+
+    .btn--back {
+        width: auto;
+        flex: 0 0 auto;
+    }
+
+    .btn--next {
+        flex: 1;
+    }
+}
+
+// Breathing room when another field follows the stepper in the same section
+.stepper + .field-label {
+    margin-top: 1rem;
+}

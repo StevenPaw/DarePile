@@ -17,13 +17,14 @@ async function request(url, options = {}) {
 export const createGame = () =>
     request(BASE, { method: 'POST' })
 
-export const getGame = (hash) =>
-    request(`${BASE}/${hash}`)
+export const getGame = (hash, token = null) =>
+    request(`${BASE}/${hash}${token ? `?token=${encodeURIComponent(token)}` : ''}`)
 
-export const setupGame = (hash, { adultType, gameType, players }) =>
+// settings: { adultType, gameType, handSize, players } — omitted keys stay unchanged
+export const setupGame = (hash, settings) =>
     request(`${BASE}/${hash}/setup`, {
         method: 'POST',
-        body: JSON.stringify({ adultType, gameType, players }),
+        body: JSON.stringify(settings),
     })
 
 export const setCards = (hash, { cardIds, customCards }) =>
@@ -52,3 +53,11 @@ export const playerAction = (hash, { cardId, playerId, type }) =>
 
 export const resetDeck = (hash) =>
     request(`${BASE}/${hash}/reset`, { method: 'POST' })
+
+// ── "Hand" mode ("Handkarten") ─────────────────────────────────
+// Player actions need the token the player's device got when joining.
+export const handAction = (hash, action, body = {}) =>
+    request(`${BASE}/${hash}/hand-${action}`, {
+        method: 'POST',
+        body: JSON.stringify(body),
+    })

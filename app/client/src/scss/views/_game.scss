@@ -88,6 +88,13 @@
     padding: 1rem;
 }
 
+// Dialogs with text input: stay at the top so the phone keyboard does not cover them
+.modal-overlay--top {
+    align-items: flex-start;
+    padding-top: max(1rem, env(safe-area-inset-top));
+    overflow-y: auto;
+}
+
 .section_buttons {
     display: flex;
     gap: 10px;
@@ -369,5 +376,18 @@
             color: var(--color-text);
             font-weight: 600;
         }
+    }
+}
+
+// "Reihum" mode: whose turn it is
+.turn-banner {
+    margin: 0 0 1.25rem;
+    padding: 0.5rem 1rem;
+    text-align: center;
+    font-size: 1.05rem;
+    color: var(--color-text);
+
+    strong {
+        color: var(--color-accent);
     }
 }

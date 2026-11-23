@@ -1,10 +1,7 @@
 <template>
   <div class="setup-view setup-view--cards">
     <header class="setup-header">
-      <button v-if="isEdit" class="btn btn--ghost btn--sm setup-header__back" @click="router.push({ name: 'game', params: { hash: route.params.hash } })">
-        ← Zurück
-      </button>
-      <h2 class="setup-header__title">{{ isEdit ? 'Spiel' : 'Schritt 2 / 2' }}</h2>
+      <h2 class="setup-header__title">{{ isEdit ? 'Spiel' : 'Schritt 3 / 3' }}</h2>
       <p class="setup-header__sub">{{ isEdit ? 'Karten bearbeiten' : 'Karten auswählen' }}</p>
     </header>
 
@@ -98,14 +95,13 @@
 
     <div class="setup-footer">
       <p v-if="error" class="error-msg">{{ error }}</p>
-      <button
-        class="btn btn--primary btn--lg"
-        :disabled="totalSelected < 10 || saving"
-        @click="startGame"
-      >
-        <span v-if="saving" class="spinner" />
-        <span v-else>{{ isEdit ? 'Speichern' : 'Spiel starten 🎮' }}</span>
-      </button>
+      <SetupNav
+        :next-label="isEdit ? 'Speichern' : 'Spiel starten'"
+        :disabled="totalSelected < 10"
+        :loading="saving"
+        @back="goBack"
+        @next="startGame"
+      />
     </div>
 
     <QRCodeModal v-if="showQr" :hash="route.params.hash" @close="showQr = false" />
@@ -119,6 +115,7 @@ import { useGameStore } from '../stores/gameStore.js'
 import { fetchCards } from '../api/cards.js'
 import ListCard from '../components/ListCard.vue'
 import QRCodeModal from '../components/QRCodeModal.vue'
+import SetupNav from '../components/SetupNav.vue'
 import QrIcon from '../../../icons/action_qr.svg?raw'
 
 const route = useRoute()
@@ -308,6 +305,12 @@ function addCustom() {
   customLevel.value = 5
   customAdultsOnly.value = false
   showCustom.value = false
+}
+
+// Editing during a game returns to the game, otherwise to step 2
+function goBack() {
+  const name = isEdit.value ? 'game' : 'setup-players'
+  router.push({ name, params: { hash: route.params.hash } })
 }
 
 async function startGame() {

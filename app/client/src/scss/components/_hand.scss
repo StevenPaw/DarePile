@@ -1,0 +1,452 @@
+// "Handkarten" mode: host screen, player screen and shared pieces
+
+// ── Shared ──────────────────────────────────────────────────────
+
+// Hand card, styled like the drawn card in "Kartenstapel" mode (2:3 playing card)
+.hand-card {
+    position: relative;
+    flex: 0 0 auto;
+    width: 8.75rem;
+    aspect-ratio: 2 / 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem 0.75rem 1rem;
+    font: inherit;
+    text-align: center;
+    background: #f5edd6;
+    color: #1a1a2e;
+    border: 2px solid rgba(0, 0, 0, 0.08);
+    border-radius: 14px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+    scroll-snap-align: center;
+    cursor: default;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+
+    &--selectable {
+        cursor: pointer;
+    }
+
+    &--selected {
+        border-color: var(--color-accent);
+        box-shadow: 0 0 0 3px var(--color-accent), 0 10px 28px rgba(0, 0, 0, 0.55);
+        transform: translateY(-14px);
+    }
+
+    &:disabled {
+        opacity: 1;
+    }
+}
+
+.hand-card__level {
+    position: absolute;
+    top: 0.55rem;
+    left: 0.65rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #6b6b85;
+}
+
+.hand-card__dare {
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1.4;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 7;
+    -webkit-box-orient: vertical;
+}
+
+.hand-card__badge {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: #e94560;
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.1em 0.45em;
+    border-radius: 4px;
+}
+
+// Horizontal, swipeable hand
+.hand-strip {
+    display: flex;
+    gap: 0.75rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    // Room for the lifted (selected) card and the shadows
+    padding: 1.25rem 1rem 1rem;
+    margin: 0 -1rem;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+.hand-strip__empty {
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    padding: 2rem 0;
+}
+
+.hand-players {
+    list-style: none;
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.hand-players__item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 2.75rem;
+    padding: 0.4rem 0.9rem;
+    background: var(--color-surface-2);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-sm);
+
+    &--giver {
+        border-color: var(--color-accent);
+    }
+
+    &--target {
+        border-color: var(--color-warn);
+    }
+}
+
+.hand-players__name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.hand-players__waiting {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+}
+
+.hand-players__score {
+    font-variant-numeric: tabular-nums;
+    color: var(--color-success);
+    font-weight: 600;
+}
+
+.player-btn__score {
+    margin-left: 0.25rem;
+    font-size: 0.8rem;
+    color: var(--color-success);
+}
+
+// ── Host screen ─────────────────────────────────────────────────
+
+.hand-host__stage {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 1.5rem 1rem;
+}
+
+.hand-host__panel {
+    width: 100%;
+    max-width: 640px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    text-align: center;
+}
+
+.hand-host__title {
+    font-size: 1.4rem;
+    font-weight: 700;
+
+    strong {
+        color: var(--color-accent);
+    }
+}
+
+.hand-host__text {
+    color: var(--color-text-muted);
+}
+
+.hand-host__warn {
+    color: var(--color-warn);
+    font-size: 0.9rem;
+}
+
+.hand-host__assignment {
+    font-size: 1.15rem;
+
+    strong {
+        color: var(--color-accent);
+    }
+}
+
+// The active dare, readable from across the room
+.hand-host__card {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 2rem 1.5rem;
+    background: #f5edd6;
+    border-radius: var(--radius);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    animation: slide-up 0.3s ease;
+}
+
+.hand-host__dare {
+    font-size: clamp(1.4rem, 4vw, 2.4rem);
+    font-weight: 700;
+    line-height: 1.3;
+    color: #1a1a2e;
+}
+
+.hand-host__notice {
+    width: 100%;
+    max-width: 640px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 1rem;
+    text-align: center;
+    border: 1px solid var(--color-warn);
+    border-radius: var(--radius-sm);
+    color: var(--color-text);
+}
+
+// ── Player screen ───────────────────────────────────────────────
+// Layout: header / stage (status, pop-up controls) / hand fixed at the bottom
+
+.hand-player {
+    height: 100vh;
+    height: 100svh;
+    display: flex;
+    flex-direction: column;
+    padding: 0 1rem;
+    background: var(--color-bg);
+    overflow: hidden;
+}
+
+.hand-player__header {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.hand-player__logo {
+    height: 1.4rem;
+    width: auto;
+}
+
+.hand-player__me {
+    flex: 1;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.hand-player__join {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    width: 100%;
+    max-width: 400px;
+    margin: 2rem auto 0;
+}
+
+.hand-player__stage {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    // Clip instead of scroll: the pop-up panel slides in from below this edge
+    overflow: hidden;
+}
+
+.hand-player__stage-content {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem 0 0;
+    overflow-y: auto;
+}
+
+.hand-player__status-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    text-align: center;
+}
+
+.hand-player__players {
+    text-align: left;
+}
+
+.hand-player__title {
+    font-size: 1.25rem;
+    font-weight: 700;
+
+    strong {
+        color: var(--color-accent);
+    }
+}
+
+.hand-player__status {
+    color: var(--color-text-muted);
+
+    &--center {
+        margin: auto;
+    }
+}
+
+// Pop-up control panel, docked at the bottom of the stage (= right above the hand)
+.hand-sheet {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem 1rem 1rem;
+    text-align: center;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-bottom: none;
+    border-radius: var(--radius) var(--radius) 0 0;
+    box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.45);
+
+    .action-panel__buttons {
+        width: 100%;
+    }
+
+    &--alert {
+        padding: 1.75rem 1rem;
+        border-color: var(--color-accent);
+        background: color-mix(in srgb, var(--color-accent) 14%, var(--color-surface));
+    }
+}
+
+.hand-sheet__title {
+    font-size: 1.1rem;
+    font-weight: 700;
+
+    strong {
+        color: var(--color-accent);
+    }
+
+    &--big {
+        font-size: 1.5rem;
+    }
+}
+
+.hand-sheet__lead {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+// Arrow towards the hand below
+.hand-sheet__pointer {
+    font-size: 1.6rem;
+    line-height: 1;
+    color: var(--color-accent);
+    animation: hand-pointer 1.2s ease-in-out infinite;
+}
+
+@keyframes hand-pointer {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(6px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hand-sheet__pointer {
+        animation: none;
+    }
+}
+
+.hand-sheet__dare {
+    width: 100%;
+    padding: 0.9rem;
+    background: #f5edd6;
+    color: #1a1a2e;
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+}
+
+.hand-sheet__actions {
+    display: flex;
+    gap: 0.75rem;
+    width: 100%;
+
+    .btn--next {
+        flex: 1;
+    }
+}
+
+.sheet-enter-active,
+.sheet-leave-active {
+    transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.sheet-enter-from,
+.sheet-leave-to {
+    transform: translateY(100%);
+    opacity: 0;
+}
+
+.hand-player__hand {
+    flex-shrink: 0;
+    position: relative;
+    z-index: 6;
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+    background: var(--color-bg);
+    border-top: 1px solid var(--color-border);
+}
+
+.hand-player__hand-label {
+    padding-top: 0.6rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.hand-player__hand-tip {
+    font-weight: 400;
+    color: var(--color-text-muted);
+}
+
+.hand-player__hint {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 1rem;
+    z-index: 20;
+}

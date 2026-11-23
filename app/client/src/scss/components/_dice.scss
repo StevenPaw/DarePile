@@ -1,0 +1,90 @@
+// 3D die (DiceRoller.vue)
+
+.dice {
+    --dice-size: 96px;
+
+    background: none;
+    border: none;
+    padding: 0;
+    perspective: 600px;
+    width: var(--dice-size);
+    height: var(--dice-size);
+    cursor: default;
+
+    &--sm {
+        --dice-size: 32px;
+    }
+
+    &--clickable {
+        cursor: pointer;
+        animation: dice-wiggle 1.6s ease-in-out infinite;
+    }
+
+    &--flying {
+        animation: dice-fly 1.2s cubic-bezier(0.3, 0.7, 0.4, 1);
+    }
+}
+
+.dice__cube {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 1.2s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+
+.dice__face {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template: repeat(3, 1fr) / repeat(3, 1fr);
+    padding: 14%;
+    gap: 4%;
+    background: #f5edd6;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 16%;
+    box-shadow: inset 0 0 calc(var(--dice-size) * 0.12) rgba(0, 0, 0, 0.18);
+    backface-visibility: hidden;
+
+    &--front  { transform: translateZ(calc(var(--dice-size) / 2)); }
+    &--back   { transform: rotateY(180deg) translateZ(calc(var(--dice-size) / 2)); }
+    &--right  { transform: rotateY(90deg) translateZ(calc(var(--dice-size) / 2)); }
+    &--left   { transform: rotateY(-90deg) translateZ(calc(var(--dice-size) / 2)); }
+    &--top    { transform: rotateX(90deg) translateZ(calc(var(--dice-size) / 2)); }
+    &--bottom { transform: rotateX(-90deg) translateZ(calc(var(--dice-size) / 2)); }
+}
+
+.dice__pip {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: var(--color-accent);
+    align-self: center;
+    justify-self: center;
+}
+
+@keyframes dice-fly {
+    0%   { transform: translateY(0) scale(1); }
+    35%  { transform: translateY(-140px) scale(1.15); }
+    70%  { transform: translateY(0) scale(1); }
+    82%  { transform: translateY(-18px); }
+    100% { transform: translateY(0); }
+}
+
+@keyframes dice-wiggle {
+    0%, 100% { transform: rotate(0); }
+    10%      { transform: rotate(-8deg); }
+    20%      { transform: rotate(8deg); }
+    30%      { transform: rotate(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dice--clickable,
+    .dice--flying {
+        animation: none;
+    }
+
+    .dice__cube {
+        transition-duration: 0.01s;
+    }
+}
