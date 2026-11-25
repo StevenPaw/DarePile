@@ -59,6 +59,7 @@ const adultOptions = [
 const modeOptions = [
   { value: 'Cardpile', label: 'Kartenstapel', desc: 'Karten aufdecken und Aufgaben erledigen' },
   { value: 'Turns', label: 'Reihum', desc: 'Alle ziehen nacheinander in fester Reihenfolge' },
+  { value: 'TruthOrDare', label: 'Wahrheit oder Pflicht', desc: 'Reihum entscheidet jeder: Frage ehrlich beantworten oder Aufgabe erledigen' },
   { value: 'Hand', label: 'Handkarten', desc: 'Alle spielen mit eigenen Karten auf dem Handy und stellen sich gegenseitig Aufgaben' },
 ]
 

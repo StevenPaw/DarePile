@@ -75,6 +75,7 @@ class CardAdmin extends ModelAdmin
                 if ($columns) {
                     $columns->setDisplayFields([
                         'Title' => 'Dare',
+                        'Type' => 'Type',
                         'Level' => 'Level',
                         'RenderAdultsOnly' => 'Adults Only',
                         'SimilarOfficialSummary' => 'Most similar official card',
@@ -83,7 +84,7 @@ class CardAdmin extends ModelAdmin
             }
 
             // Bulk actions: checkboxes per row plus an action dropdown above the grid
-            $bulkManager = BulkManager::create(['Dare', 'Level', 'AdultsOnly'], false)
+            $bulkManager = BulkManager::create(['Dare', 'Type', 'Level', 'AdultsOnly'], false)
                 ->addBulkAction(EditHandler::class)
                 ->addBulkAction(
                     $this->modelTab === self::TAB_OFFICIAL ? SetUnofficialHandler::class : SetOfficialHandler::class
@@ -115,6 +116,7 @@ class CardAdmin extends ModelAdmin
     {
         return [
             'Dare'       => 'Dare',
+            'Type'       => 'Type',
             'Level'      => 'Level',
             'AdultsOnly' => 'AdultsOnly',
             'Official'   => 'Official',

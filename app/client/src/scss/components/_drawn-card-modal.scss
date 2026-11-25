@@ -174,3 +174,21 @@
         color: var(--color-accent);
     }
 }
+
+// "Wahrheit oder Pflicht"
+.drawn-card__front--truth {
+    background: #e9e0f7;
+}
+
+.drawn-card__type {
+    position: absolute;
+    top: 1rem;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(26, 26, 46, 0.55);
+}

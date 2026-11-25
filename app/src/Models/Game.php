@@ -43,7 +43,7 @@ class Game extends DataObject
     private static array $db = [
         'Title' => 'Varchar(255)',
         'AdultType' => 'Enum("No Adult Dares, Misc Dares, Adult Dares Only", "No Adult Dares")',
-        'GameType' => 'Enum("Cardpile, Turns, Hand", "Cardpile")',
+        'GameType' => 'Enum("Cardpile, Turns, Hand, TruthOrDare", "Cardpile")',
         'Hash' => 'Varchar(255)',
         'UsedCardIDs' => 'Text',
         // "Turns" mode: index (in player order) of the player whose turn it is
@@ -93,11 +93,27 @@ class Game extends DataObject
     private static string $default_sort = 'Title ASC';
 
     /**
-     * Player whose turn it is in "Turns" mode, null in other modes.
+     * Modes with a fixed player order: "Turns" and "TruthOrDare".
+     */
+    public function hasTurns(): bool
+    {
+        return in_array($this->GameType, ['Turns', 'TruthOrDare'], true);
+    }
+
+    /**
+     * "Truth" cards are only played in "TruthOrDare" mode.
+     */
+    public function allowsTruthCards(): bool
+    {
+        return $this->GameType === 'TruthOrDare';
+    }
+
+    /**
+     * Player whose turn it is in modes with a fixed order, null in other modes.
      */
     public function getCurrentPlayer(): ?Player
     {
-        if ($this->GameType !== 'Turns') {
+        if (!$this->hasTurns()) {
             return null;
         }
         $players = $this->Players()->toArray();

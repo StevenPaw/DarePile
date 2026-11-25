@@ -87,3 +87,43 @@
     opacity: 0;
     transform: scale(1.05);
 }
+
+// "Wahrheit oder Pflicht": two smaller piles side by side
+.pile-duo {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    width: 100%;
+    padding: 0 1rem 2.5rem;
+
+    .pile-wrapper {
+        flex-direction: column;
+        width: auto;
+        height: auto;
+        padding: 0;
+    }
+
+    .pile {
+        width: min(140px, 40vw);
+        height: calc(min(140px, 40vw) * 1.5);
+    }
+}
+
+.pile__title {
+    margin: 0 0 0.75rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-text);
+}
+
+.pile-wrapper--truth {
+    .pile__title {
+        color: var(--color-truth);
+    }
+
+    .pile__card {
+        background: linear-gradient(135deg, #5b3a8c 0%, #2f1d4e 100%);
+    }
+}

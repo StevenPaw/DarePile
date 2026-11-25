@@ -41,14 +41,16 @@ class DareSimilarity
         string $dare,
         int $limit = 5,
         int $threshold = self::THRESHOLD,
-        ?int $excludeId = null
+        ?int $excludeId = null,
+        ?string $type = null
     ): array {
         $normalised = self::normalise($dare);
         $words = self::words($normalised);
         $matches = [];
 
         foreach (self::officialCards() as $id => $official) {
-            if ($id === $excludeId) {
+            // Truth questions and dares are only compared with their own kind
+            if ($id === $excludeId || ($type !== null && $official['card']->Type !== $type)) {
                 continue;
             }
             $score = self::score($normalised, $words, $official['normalised'], $official['words']);

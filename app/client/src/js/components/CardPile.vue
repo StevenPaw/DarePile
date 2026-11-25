@@ -1,5 +1,6 @@
 <template>
-  <div class="pile-wrapper" @click="!finished && $emit('draw')">
+  <div class="pile-wrapper" :class="variant && `pile-wrapper--${variant}`" @click="!finished && $emit('draw')">
+    <p v-if="title" class="pile__title">{{ title }}</p>
     <transition name="card-pop" mode="out-in">
       <div v-if="!finished" key="pile" class="pile">
         <div
@@ -10,10 +11,11 @@
         >
           <div class="pile__card-pattern" />
         </div>
-        <p class="pile__label">Tippen zum Aufdecken</p>
+        <p class="pile__label">{{ label }}</p>
       </div>
       <div v-else key="empty" class="pile pile--empty">
         <span class="pile__empty-icon icon" v-html="PlayingCardsIcon" />
+        <p v-if="title" class="pile__label">{{ label }}</p>
       </div>
     </transition>
   </div>
@@ -25,6 +27,10 @@ import PlayingCardsIcon from '../../../icons/playing_cards.svg?raw'
 defineProps({
   count: { type: Number, default: 0 },
   finished: { type: Boolean, default: false },
+  label: { type: String, default: 'Tippen zum Aufdecken' },
+  // "Wahrheit oder Pflicht": heading above the pile and colour ('truth' / 'dare')
+  title: { type: String, default: '' },
+  variant: { type: String, default: '' },
 })
 defineEmits(['draw'])
 

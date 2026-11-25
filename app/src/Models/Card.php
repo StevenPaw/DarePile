@@ -13,6 +13,7 @@ use SilverStripe\ORM\DataObject;
  * Class \App\Models\Card
  *
  * @property ?string $Dare
+ * @property ?string $Type
  * @property int $Level
  * @property bool $AdultsOnly
  * @property bool $Official
@@ -26,10 +27,17 @@ use SilverStripe\ORM\DataObject;
  */
 class Card extends DataObject
 {
+    // "Pflicht": a task that has to be done
+    public const TYPE_DARE = 'Dare';
+
+    // "Wahrheit": a question that has to be answered truthfully ("Truth or Dare" mode only)
+    public const TYPE_TRUTH = 'Truth';
+
     private static string $table_name = 'Card';
 
     private static array $db = [
         'Dare' => 'Text',
+        'Type' => 'Enum("Dare, Truth", "Dare")',
         'Level' => 'Int',
         'AdultsOnly' => 'Boolean',
         'Official' => 'Boolean',
@@ -37,6 +45,7 @@ class Card extends DataObject
 
     private static array $summary_fields = [
         'Title',
+        'Type',
         'Level',
         'RenderAdultsOnly' => 'Adults Only',
         'RenderOfficialStatus' => 'Official',
@@ -50,6 +59,7 @@ class Card extends DataObject
 
     private static array $searchable_fields = [
         'Dare',
+        'Type',
         'Level',
         'AdultsOnly',
         'Official',
@@ -65,6 +75,19 @@ class Card extends DataObject
             $title = substr($title, 0, 70) . '...';
         }
         return $title;
+    }
+
+    public function isTruth(): bool
+    {
+        return $this->Type === self::TYPE_TRUTH;
+    }
+
+    /**
+     * Normalises a type value from API input, unknown values become "Dare".
+     */
+    public static function normaliseType(mixed $type): string
+    {
+        return is_string($type) && strcasecmp($type, self::TYPE_TRUTH) === 0 ? self::TYPE_TRUTH : self::TYPE_DARE;
     }
 
     public function RenderAdultsOnly(): string
@@ -93,7 +116,7 @@ class Card extends DataObject
      */
     public function getSimilarOfficialSummary(): string
     {
-        $match = DareSimilarity::findSimilarOfficial((string) $this->Dare, 1, DareSimilarity::THRESHOLD, $this->ID)[0] ?? null;
+        $match = DareSimilarity::findSimilarOfficial((string) $this->Dare, 1, DareSimilarity::THRESHOLD, $this->ID, $this->Type)[0] ?? null;
         if (!$match) {
             return '–';
         }
@@ -107,7 +130,7 @@ class Card extends DataObject
      */
     private function renderSimilarOfficial(): string
     {
-        $matches = DareSimilarity::findSimilarOfficial((string) $this->Dare, 5, DareSimilarity::THRESHOLD, $this->ID);
+        $matches = DareSimilarity::findSimilarOfficial((string) $this->Dare, 5, DareSimilarity::THRESHOLD, $this->ID, $this->Type);
 
         if (!$matches) {
             return '<div class="alert alert-success">No similar official cards found.</div>';

@@ -12,7 +12,8 @@
         <span class="icon" v-html="StatisticsIcon" />
       </button>
       <span class="remaining-count">
-        {{ availableCards.length }} Karten übrig
+        <template v-if="isTruthOrDare">{{ availableTruths.length }} Wahrheit · {{ availableDares.length }} Pflicht</template>
+        <template v-else>{{ availableCards.length }} Karten übrig</template>
       </span>
       <div class="game-header__actions">
         <button class="btn btn--ghost btn--sm" :disabled="reshuffling" @click="onReshuffle" title="Stapel neu mischen" aria-label="Stapel neu mischen">
@@ -29,13 +30,34 @@
 
     <div class="game-area" @click.self="skipCard">
       <p v-if="turnPlayer && availableCards.length > 0" class="turn-banner">
-        <strong>{{ turnPlayer.name }}</strong>, ziehe deine Karte
+        <template v-if="isTruthOrDare"><strong>{{ turnPlayer.name }}</strong>, Wahrheit oder Pflicht?</template>
+        <template v-else><strong>{{ turnPlayer.name }}</strong>, ziehe deine Karte</template>
       </p>
 
+      <div v-if="isTruthOrDare && availableCards.length > 0" class="pile-duo">
+        <CardPile
+          variant="truth"
+          title="Wahrheit"
+          :label="availableTruths.length ? 'Frage ziehen' : 'Keine Fragen mehr'"
+          :count="availableTruths.length"
+          :finished="availableTruths.length === 0"
+          @draw="onDraw('Truth')"
+        />
+        <CardPile
+          variant="dare"
+          title="Pflicht"
+          :label="availableDares.length ? 'Aufgabe ziehen' : 'Keine Aufgaben mehr'"
+          :count="availableDares.length"
+          :finished="availableDares.length === 0"
+          @draw="onDraw('Dare')"
+        />
+      </div>
+
       <CardPile
+        v-else
         :count="availableCards.length"
         :finished="availableCards.length === 0"
-        @draw="onDraw"
+        @draw="onDraw()"
       />
 
       <div v-if="availableCards.length === 0 && !drawnCard" class="all-done">
@@ -71,6 +93,7 @@
       :card="drawnCard"
       :players="players"
       :fixed-player="turnPlayer"
+      :show-type="isTruthOrDare"
       @complete="onComplete"
       @fail="onFail"
       @return-card="onReturn"
@@ -80,10 +103,20 @@
     <div v-if="showAddCard" class="modal-overlay modal-overlay--top" @click.self="showAddCard = false">
       <div class="modal-box">
         <h3 class="modal-title">Karte hinzufügen</h3>
+        <div v-if="isTruthOrDare" class="type-toggle" role="group" aria-label="Kartentyp">
+          <button
+            v-for="opt in TYPE_OPTIONS"
+            :key="opt.value"
+            type="button"
+            class="type-toggle__btn"
+            :class="{ 'type-toggle__btn--active': newType === opt.value }"
+            @click="newType = opt.value"
+          >{{ opt.label }}</button>
+        </div>
         <textarea
           v-model="newDare"
           class="input textarea"
-          placeholder="Aufgabe eingeben …"
+          :placeholder="newType === 'Truth' ? 'Frage eingeben …' : 'Aufgabe eingeben …'"
           rows="3"
           maxlength="500"
         />
@@ -147,23 +180,32 @@ const store = useGameStore()
 const hash = computed(() => route.params.hash)
 const players = computed(() => store.players)
 const availableCards = computed(() => store.availableCards)
-// "Turns" mode: whose turn it is (null in "Cardpile" mode)
-const turnPlayer = computed(() => (store.gameType === 'Turns' ? store.currentPlayer : null))
+// "Wahrheit oder Pflicht": two piles, the player picks one
+const isTruthOrDare = computed(() => store.isTruthOrDare)
+const availableTruths = computed(() => store.availableTruths)
+const availableDares = computed(() => store.availableDares)
+// "Turns" / "TruthOrDare" mode: whose turn it is (null in "Cardpile" mode)
+const turnPlayer = computed(() => store.currentPlayer)
+
+const TYPE_OPTIONS = [
+  { value: 'Dare', label: 'Pflicht' },
+  { value: 'Truth', label: 'Wahrheit' },
+]
 
 const noCardsInRange = computed(() =>
-    store.cards.filter(
+    store.playableCards.filter(
         (c) => c.level >= store.levelMin && c.level <= store.levelMax
     ).length === 0
 )
 
 const unusedBelow = computed(() =>
-    store.cards.filter(
+    store.playableCards.filter(
         (c) => !store.usedCardIds.includes(c.id) && c.level < store.levelMin
     ).length
 )
 
 const unusedAbove = computed(() =>
-    store.cards.filter(
+    store.playableCards.filter(
         (c) => !store.usedCardIds.includes(c.id) && c.level > store.levelMax
     ).length
 )
@@ -174,6 +216,7 @@ const showQr = ref(false)
 const newDare = ref('')
 const newLevel = ref(5)
 const newAdultsOnly = ref(false)
+const newType = ref('Dare')
 const addingCard = ref(false)
 const reshuffling = ref(false)
 const hint = ref(null)
@@ -183,10 +226,14 @@ function showHint(msg, timeout = 2000) {
   setTimeout(() => (hint.value = null), timeout)
 }
 
-function onDraw() {
-  if (availableCards.value.length === 0) return
-  const idx = Math.floor(Math.random() * availableCards.value.length)
-  drawnCard.value = availableCards.value[idx]
+// type: 'Truth' / 'Dare' draws from that pile ("Wahrheit oder Pflicht"), otherwise from all cards
+function onDraw(type = null) {
+  const pile = type === 'Truth'
+    ? availableTruths.value
+    : type === 'Dare' ? availableDares.value : availableCards.value
+  if (pile.length === 0) return
+  const idx = Math.floor(Math.random() * pile.length)
+  drawnCard.value = pile[idx]
   store.draw(drawnCard.value.id)
 }
 
@@ -234,10 +281,11 @@ async function submitNewCard() {
   if (!dare) return
   addingCard.value = true
   try {
-    await store.addCard(dare, newLevel.value, newAdultsOnly.value)
+    await store.addCard(dare, newLevel.value, newAdultsOnly.value, isTruthOrDare.value ? newType.value : 'Dare')
     newDare.value = ''
     newLevel.value = 5
     newAdultsOnly.value = false
+    newType.value = 'Dare'
     showAddCard.value = false
     showHint('Karte hinzugefügt!')
   } catch {

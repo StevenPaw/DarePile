@@ -1,7 +1,8 @@
 const BASE = '/api/v1/cards'
 
-export async function fetchCards({ search = '', adult = null, page = 1, limit = 30 } = {}) {
-    const params = new URLSearchParams({ page, limit })
+// type: 'dare' (default), 'truth' or 'all'
+export async function fetchCards({ search = '', adult = null, type = 'dare', page = 1, limit = 30 } = {}) {
+    const params = new URLSearchParams({ page, limit, type })
     if (search) params.set('search', search)
     if (adult !== null) params.set('adult', adult ? '1' : '0')
 

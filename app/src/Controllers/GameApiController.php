@@ -254,16 +254,19 @@ class GameApiController extends RequestHandler
                     $dare = trim($item);
                     $level = 1;
                     $adultsOnly = false;
+                    $type = Card::TYPE_DARE;
                 } else {
                     $dare = trim((string) ($item['dare'] ?? ''));
                     $level = isset($item['level']) ? max(1, min(10, (int) $item['level'])) : 1;
                     $adultsOnly = !empty($item['adultsOnly']);
+                    $type = Card::normaliseType($item['type'] ?? null);
                 }
                 if ($dare === '') {
                     continue;
                 }
                 $card = Card::create();
                 $card->Dare = $dare;
+                $card->Type = $type;
                 $card->Level = $level;
                 $card->Official = false;
                 $card->AdultsOnly = $adultsOnly;
@@ -286,6 +289,7 @@ class GameApiController extends RequestHandler
 
         $card = Card::create();
         $card->Dare = $dare;
+        $card->Type = Card::normaliseType($body['type'] ?? null);
         $card->Level = isset($body['level']) ? max(1, min(10, (int) $body['level'])) : 1;
         $card->Official = false;
         $card->AdultsOnly = !empty($body['adultsOnly']);
@@ -372,8 +376,8 @@ class GameApiController extends RequestHandler
             $game->UsedCardIDs = json_encode($used);
         }
 
-        // In "Turns" mode a completed or failed dare ends the turn
-        if ($game->GameType === 'Turns') {
+        // With a fixed player order a completed or failed card ends the turn
+        if ($game->hasTurns()) {
             $game->advanceTurn();
         }
         $game->write();
@@ -482,6 +486,7 @@ class GameApiController extends RequestHandler
         return [
             'id' => $card->ID,
             'dare' => $card->Dare,
+            'type' => $card->Type ?: Card::TYPE_DARE,
             'level' => (int) $card->Level,
             'adultsOnly' => (bool) $card->AdultsOnly,
             'official' => (bool) $card->Official,

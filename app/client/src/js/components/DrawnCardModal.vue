@@ -2,7 +2,7 @@
   <div class="card-overlay" @click.self="$emit('skip')">
 
     <div v-if="flipped && fixedPlayer" class="player-select-bar">
-      <p class="turn-label">Aufgabe für <strong>{{ fixedPlayer.name }}</strong></p>
+      <p class="turn-label">{{ isTruth ? 'Frage' : 'Aufgabe' }} für <strong>{{ fixedPlayer.name }}</strong></p>
     </div>
 
     <div v-else-if="flipped" class="player-select-bar">
@@ -23,7 +23,8 @@
     <div class="drawn-card" :class="{ 'drawn-card--flipped': flipped }">
       <div class="drawn-card__inner">
         <div class="drawn-card__back" />
-        <div class="drawn-card__front">
+        <div class="drawn-card__front" :class="{ 'drawn-card__front--truth': isTruth }">
+          <div v-if="showType" class="drawn-card__type">{{ isTruth ? 'Wahrheit' : 'Pflicht' }}</div>
           <div class="drawn-card__dare">
             <template v-for="(seg, i) in resolvedDare" :key="i">
               <mark v-if="seg.highlighted" class="dare-highlight">{{ seg.text }}</mark><!--
@@ -42,14 +43,14 @@
           :disabled="!selectedPlayer"
           @click="$emit('complete', selectedPlayer)"
         >
-          ✓ Ausgeführt
+          {{ isTruth ? '✓ Beantwortet' : '✓ Ausgeführt' }}
         </button>
         <button
           class="btn btn--danger btn--lg"
           :disabled="!selectedPlayer"
           @click="$emit('fail', selectedPlayer)"
         >
-          ✗ Nicht ausgeführt
+          {{ isTruth ? '✗ Nicht beantwortet' : '✗ Nicht ausgeführt' }}
         </button>
       </div>
 
@@ -67,7 +68,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { resolvePlaceholders } from '../utils/placeholders.js'
 
 const props = defineProps({
@@ -75,7 +76,11 @@ const props = defineProps({
   players: { type: Array, default: () => [] },
   // "Turns" mode: the player whose turn it is; skips the player selection
   fixedPlayer: { type: Object, default: null },
+  // "Wahrheit oder Pflicht": label the card with its type
+  showType: { type: Boolean, default: false },
 })
+
+const isTruth = computed(() => props.card.type === 'Truth')
 
 defineEmits(['complete', 'fail', 'return-card', 'skip'])
 

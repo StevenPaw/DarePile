@@ -31,6 +31,8 @@ class CardApiController extends RequestHandler
         try {
             $search = trim((string) $request->getVar('search'));
             $adult = $request->getVar('adult');
+            // "dare" (default), "truth" or "all"
+            $type = strtolower(trim((string) $request->getVar('type')));
             $page = max(1, (int) $request->getVar('page'));
             $limit = min(100, max(10, (int) ($request->getVar('limit') ?: 30)));
 
@@ -41,6 +43,12 @@ class CardApiController extends RequestHandler
                 $cards = $cards->filter('AdultsOnly', false);
             } elseif ($adult === 'true' || $adult === '1') {
                 $cards = $cards->filter('AdultsOnly', true);
+            }
+
+            if ($type === 'truth') {
+                $cards = $cards->filter('Type', Card::TYPE_TRUTH);
+            } elseif ($type !== 'all') {
+                $cards = $cards->filter('Type', Card::TYPE_DARE);
             }
 
             if ($search !== '') {
@@ -55,6 +63,7 @@ class CardApiController extends RequestHandler
                 $items[] = [
                     'id' => $card->ID,
                     'dare' => $card->Dare,
+                    'type' => $card->Type ?: Card::TYPE_DARE,
                     'level' => (int) $card->Level,
                     'adultsOnly' => (bool) $card->AdultsOnly,
                 ];

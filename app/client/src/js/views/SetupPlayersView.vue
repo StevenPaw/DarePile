@@ -120,7 +120,8 @@ const store = useGameStore()
 
 const hash = computed(() => route.params.hash)
 const isHand = computed(() => store.gameType === 'Hand')
-const isTurns = computed(() => store.gameType === 'Turns')
+// Modes with a fixed player order
+const isTurns = computed(() => ['Turns', 'TruthOrDare'].includes(store.gameType))
 const joinLink = computed(() => joinUrl(hash.value))
 
 // Names entered on this device ("Kartenstapel" / "Reihum")

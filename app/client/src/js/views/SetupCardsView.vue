@@ -11,6 +11,9 @@
         :class="{ 'count-badge--ok': totalSelected >= 10 }"
         :style="totalSelected < 10 ? { '--fill': (totalSelected / 10 * 100) + '%' } : {}"
       >{{ totalSelected }} / mind. 10 Karten</span>
+      <span v-if="isTruthOrDare" class="card-count-bar__split">
+        {{ selectedDareCount }} Pflicht · {{ selectedTruthCount }} Wahrheit
+      </span>
       <div class="card-count-bar__actions">
         <button class="btn btn--ghost btn--sm" :disabled="loadingCards" @click="toggleAll">
           <span v-if="loadingAll" class="spinner" />
@@ -42,6 +45,7 @@
         <ListCard
           v-else
           :dare="item.card.dare"
+          :is-truth="item.card.type === 'Truth'"
           :level="item.card.level"
           :adults-only="item.card.adultsOnly"
           :is-custom="item.card.isCustom"
@@ -64,11 +68,21 @@
         + Eigene Karte
       </button>
       <div v-if="showCustom" class="custom-card-form-expanded">
+        <div v-if="isTruthOrDare" class="type-toggle" role="group" aria-label="Kartentyp">
+          <button
+            v-for="opt in TYPE_OPTIONS"
+            :key="opt.value"
+            type="button"
+            class="type-toggle__btn"
+            :class="{ 'type-toggle__btn--active': customType === opt.value }"
+            @click="customType = opt.value"
+          >{{ opt.label }}</button>
+        </div>
         <input
           v-model="customDare"
           class="input"
           type="text"
-          placeholder="Aufgabe eingeben …"
+          :placeholder="customType === 'Truth' ? 'Frage eingeben …' : 'Aufgabe eingeben …'"
           maxlength="500"
           @keyup.enter="addCustom"
         >
@@ -130,6 +144,7 @@ const deselectedCustomIds = ref(new Set())
 const customDare = ref('')
 const customLevel = ref(5)
 const customAdultsOnly = ref(false)
+const customType = ref('Dare')
 const showCustom = ref(false)
 const showQr = ref(false)
 const search = ref('')
@@ -145,9 +160,16 @@ const polling = ref(false)
 let pollInterval = null
 
 const isEdit = computed(() => route.query.edit === 'true')
+// "Wahrheit oder Pflicht": truth questions can be selected as well
+const isTruthOrDare = computed(() => store.isTruthOrDare)
+
+const TYPE_OPTIONS = [
+  { value: 'Dare', label: 'Pflicht' },
+  { value: 'Truth', label: 'Wahrheit' },
+]
 
 const savedCustomCards = computed(() =>
-  (store.game?.cards ?? []).filter((c) => !c.official)
+  store.playableCards.filter((c) => !c.official)
 )
 
 // Alle eigenen Karten als einheitliches Format für die Liste
@@ -176,6 +198,22 @@ const activeCustomCount = computed(() =>
 const totalSelected = computed(() =>
   selectedIds.value.size + activeCustomCount.value
 )
+
+// Type of every known card, to split the selection into "Pflicht" and "Wahrheit"
+const cardTypes = computed(() => {
+  const types = new Map()
+  for (const c of store.cards) types.set(c.id, c.type)
+  for (const c of officialCards.value) types.set(c.id, c.type)
+  return types
+})
+
+const selectedTruthCount = computed(() =>
+  [...selectedIds.value].filter((id) => cardTypes.value.get(id) === 'Truth').length +
+  savedCustomCards.value.filter((c) => c.type === 'Truth' && !deselectedCustomIds.value.has(c.id)).length +
+  customCards.value.filter((c) => c.type === 'Truth' && c.selected).length
+)
+
+const selectedDareCount = computed(() => totalSelected.value - selectedTruthCount.value)
 
 const allSelected = computed(() =>
   officialCards.value.length > 0 &&
@@ -260,7 +298,8 @@ async function loadMore() {
       : store.game?.adultType === 'No Adult Dares'
         ? false
         : null
-    const res = await fetchCards({ search: search.value, adult, page: page.value, limit: 30 })
+    const type = isTruthOrDare.value ? 'all' : 'dare'
+    const res = await fetchCards({ search: search.value, adult, type, page: page.value, limit: 30 })
     officialCards.value.push(...res.cards)
     hasMore.value = officialCards.value.length < res.total
     page.value++
@@ -300,7 +339,8 @@ function onScroll() {
 function addCustom() {
   const dare = customDare.value.trim()
   if (!dare) return
-  customCards.value.push({ dare, level: customLevel.value, adultsOnly: customAdultsOnly.value, selected: true })
+  const type = isTruthOrDare.value ? customType.value : 'Dare'
+  customCards.value.push({ dare, type, level: customLevel.value, adultsOnly: customAdultsOnly.value, selected: true })
   customDare.value = ''
   customLevel.value = 5
   customAdultsOnly.value = false
@@ -325,7 +365,7 @@ async function startGame() {
       .map((c) => c.id)
     const newCustom = customCards.value
       .filter((c) => c.selected)
-      .map(({ dare, level, adultsOnly }) => ({ dare, level, adultsOnly }))
+      .map(({ dare, type, level, adultsOnly }) => ({ dare, type, level, adultsOnly }))
     await store.saveCards([...selectedIds.value, ...savedCustomIds], newCustom)
     router.push({ name: 'game', params: { hash: route.params.hash } })
   } catch {
@@ -340,7 +380,8 @@ onMounted(async () => {
     await store.loadGame(route.params.hash)
   }
   if (isEdit.value && store.game) {
-    const gameCards = store.game.cards ?? []
+    // Truth cards from an earlier "Wahrheit oder Pflicht" setup are dropped in other modes
+    const gameCards = store.playableCards
     selectedIds.value = new Set(
       gameCards.filter((c) => c.official).map((c) => c.id)
     )

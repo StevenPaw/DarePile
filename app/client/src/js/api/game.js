@@ -33,10 +33,11 @@ export const setCards = (hash, { cardIds, customCards }) =>
         body: JSON.stringify({ cardIds, customCards }),
     })
 
-export const addCustomCard = (hash, dare, level = 1, adultsOnly = false) =>
+// type: 'Dare' ("Pflicht") or 'Truth' ("Wahrheit")
+export const addCustomCard = (hash, dare, level = 1, adultsOnly = false, type = 'Dare') =>
     request(`${BASE}/${hash}/card`, {
         method: 'POST',
-        body: JSON.stringify({ dare, level, adultsOnly }),
+        body: JSON.stringify({ dare, level, adultsOnly, type }),
     })
 
 export const drawCard = (hash, cardId) =>

@@ -6,12 +6,22 @@
       <p class="add-card-sub">Karte zu einem Spiel hinzufügen</p>
 
       <form v-if="!submitted" class="add-card-form" @submit.prevent="submit">
-        <label class="field-label" for="dare-input">Deine Aufgabe</label>
+        <div v-if="isTruthOrDare" class="type-toggle" role="group" aria-label="Kartentyp">
+          <button
+            v-for="opt in TYPE_OPTIONS"
+            :key="opt.value"
+            type="button"
+            class="type-toggle__btn"
+            :class="{ 'type-toggle__btn--active': type === opt.value }"
+            @click="type = opt.value"
+          >{{ opt.label }}</button>
+        </div>
+        <label class="field-label" for="dare-input">{{ type === 'Truth' ? 'Deine Frage' : 'Deine Aufgabe' }}</label>
         <textarea
           id="dare-input"
           v-model="dare"
           class="input textarea"
-          placeholder="Beschreibe die Aufgabe …"
+          :placeholder="type === 'Truth' ? 'Stelle eine Frage, die ehrlich beantwortet werden muss …' : 'Beschreibe die Aufgabe …'"
           rows="4"
           maxlength="500"
           required
@@ -56,15 +66,22 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { addCustomCard } from '../api/game.js'
+import { addCustomCard, getGame } from '../api/game.js'
 import DarePileLogo from '../../../icons/darepile_logo.svg'
 
 const route = useRoute()
 const dare = ref('')
 const level = ref(5)
 const adultsOnly = ref(false)
+// "Wahrheit oder Pflicht": questions can be added as well
+const isTruthOrDare = ref(false)
+const type = ref('Dare')
+const TYPE_OPTIONS = [
+  { value: 'Dare', label: 'Pflicht' },
+  { value: 'Truth', label: 'Wahrheit' },
+]
 const loading = ref(false)
 const error = ref(null)
 const submitted = ref(false)
@@ -75,7 +92,7 @@ async function submit() {
   loading.value = true
   error.value = null
   try {
-    await addCustomCard(route.params.hash, text, level.value, adultsOnly.value)
+    await addCustomCard(route.params.hash, text, level.value, adultsOnly.value, isTruthOrDare.value ? type.value : 'Dare')
     submitted.value = true
   } catch (e) {
     error.value = 'Fehler beim Hinzufügen. Bitte erneut versuchen.'
@@ -90,4 +107,11 @@ function reset() {
   adultsOnly.value = false
   submitted.value = false
 }
+
+onMounted(async () => {
+  try {
+    const game = await getGame(route.params.hash)
+    isTruthOrDare.value = game.gameType === 'TruthOrDare'
+  } catch { /* without the game type only dares can be added */ }
+})
 </script>

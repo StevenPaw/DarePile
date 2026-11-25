@@ -5,8 +5,19 @@
         ← Zurück
       </button>
       <h2 class="setup-header__title">Kartenübersicht</h2>
-      <p class="setup-header__sub">Alle offiziellen Aufgaben</p>
+      <p class="setup-header__sub">Alle offiziellen Karten</p>
     </header>
+
+    <div class="overview-filter" role="group" aria-label="Kartentyp">
+      <button
+        v-for="opt in typeOptions"
+        :key="opt.value"
+        :class="['overview-filter__btn', { 'overview-filter__btn--active': typeFilter === opt.value }]"
+        @click="typeFilter = opt.value"
+      >
+        {{ opt.label }}
+      </button>
+    </div>
 
     <div class="overview-filter" role="group" aria-label="Altersfilter">
       <button
@@ -65,10 +76,18 @@ const filterOptions = [
   { value: 'ue18', label: 'Ü18' },
 ]
 
+const typeFilter = ref('Dare')
+
+const typeOptions = [
+  { value: 'Dare',  label: 'Pflicht' },
+  { value: 'Truth', label: 'Wahrheit' },
+]
+
 const filteredCards = computed(() => {
-  if (filter.value === 'u18')  return cards.value.filter((c) => !c.adultsOnly)
-  if (filter.value === 'ue18') return cards.value.filter((c) => c.adultsOnly)
-  return cards.value
+  const ofType = cards.value.filter((c) => c.type === typeFilter.value)
+  if (filter.value === 'u18')  return ofType.filter((c) => !c.adultsOnly)
+  if (filter.value === 'ue18') return ofType.filter((c) => c.adultsOnly)
+  return ofType
 })
 
 const groupedCards = computed(() => {
@@ -107,7 +126,7 @@ async function loadAll() {
     let pg = 1
     let hasMore = true
     while (hasMore) {
-      const res = await fetchCards({ page: pg, limit: 100 })
+      const res = await fetchCards({ type: 'all', page: pg, limit: 100 })
       cards.value.push(...res.cards)
       hasMore = cards.value.length < res.total
       pg++

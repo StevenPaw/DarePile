@@ -32,7 +32,8 @@ export const useGameStore = defineStore('game', () => {
     const cards = computed(() => game.value?.cards ?? [])
     const usedCardIds = computed(() => game.value?.usedCardIds ?? [])
     const gameType = computed(() => game.value?.gameType ?? 'Cardpile')
-    // Player whose turn it is ("Turns" mode only, otherwise null)
+    const isTruthOrDare = computed(() => gameType.value === 'TruthOrDare')
+    // Player whose turn it is ("Turns" and "TruthOrDare" modes, otherwise null)
     const currentPlayer = computed(() =>
         players.value.find((p) => p.id === game.value?.currentPlayerId) ?? null
     )
@@ -40,13 +41,22 @@ export const useGameStore = defineStore('game', () => {
     const levelMin = ref(1)
     const levelMax = ref(10)
 
+    // "Truth" cards are only played in "TruthOrDare" mode
+    const playableCards = computed(() =>
+        isTruthOrDare.value ? cards.value : cards.value.filter((c) => c.type !== 'Truth')
+    )
+
     const availableCards = computed(() =>
-        cards.value.filter((c) =>
+        playableCards.value.filter((c) =>
             !usedCardIds.value.includes(c.id) &&
             c.level >= levelMin.value &&
             c.level <= levelMax.value
         )
     )
+
+    // "TruthOrDare" mode: the two piles
+    const availableTruths = computed(() => availableCards.value.filter((c) => c.type === 'Truth'))
+    const availableDares = computed(() => availableCards.value.filter((c) => c.type !== 'Truth'))
 
     async function withLoading(fn) {
         loading.value = true
@@ -107,9 +117,9 @@ export const useGameStore = defineStore('game', () => {
         })
     }
 
-    async function addCard(dare, level = 1, adultsOnly = false) {
+    async function addCard(dare, level = 1, adultsOnly = false, type = 'Dare') {
         return withLoading(async () => {
-            const card = await gameApi.addCustomCard(hash.value, dare, level, adultsOnly)
+            const card = await gameApi.addCustomCard(hash.value, dare, level, adultsOnly, type)
             if (game.value) {
                 game.value.cards = [...(game.value.cards ?? []), card]
             }
@@ -168,8 +178,12 @@ export const useGameStore = defineStore('game', () => {
         cards,
         usedCardIds,
         gameType,
+        isTruthOrDare,
         currentPlayer,
+        playableCards,
         availableCards,
+        availableTruths,
+        availableDares,
         levelMin,
         levelMax,
         createGame,

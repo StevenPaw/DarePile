@@ -414,6 +414,8 @@ class HandGame
         }
 
         $cards = $game->Cards()->filter([
+            // Truth questions do not work as dares given to someone else
+            'Type' => Card::TYPE_DARE,
             'Level:GreaterThanOrEqual' => $game->RefillMin ?: 1,
             'Level:LessThanOrEqual' => $game->RefillMax ?: 10,
         ]);
